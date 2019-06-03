@@ -196,7 +196,7 @@ rule multiqc_bowtie:
     wrapper: '0.31.1/bio/multiqc'
 
 rule bam_stats:
-    input: 'cleaned/{sample}.bam'
+    input: 'bams/{sample}.bam'
     output: 'qc/samtools_stats/{sample}_samtools_stats.txt'
     wrapper: '0.31.1/bio/samtools/stats'
 
@@ -205,21 +205,6 @@ rule bam_stats_multiqc:
     output: 'multiqc/samtools_stats/multiqc.html'
     log: 'multiqc/samtools_stats/multiqc.log'
     wrapper: '0.31.1/bio/multiqc'
-
-rule sort_bams:
-    input: 'bams/{sample}.bam'
-    output: 'sorted/{sample}.bam'
-    threads: 8
-    wrapper: '0.31.1/bio/samtools/sort'
-
-rule remove_duplicates:
-    input: 'sorted/{sample}.bam'
-    output:
-          bam='deduplicated/{sample}.bam',
-          metrics='qc/picard/{sample}.txt'
-    log: 'deduplicated/{sample}.log'
-    params: 'REMOVE_DUPLICATES=True'
-    wrapper: '0.31.1/bio/picard/markduplicates'
 
 rule bam2bw:
     input:
@@ -255,8 +240,10 @@ rule call_peaks_sicer:
               config['genome'], str(rules.download_chrom_sizes.output))
     conda: 'envs/py27.env.yaml'
     log: 'sicer/{sample}-W{width}-G{gap}-E{escore}_sicer.log'
-    shell: 'SICER-rb.sh bams/pileup {params.input_filename} sicer {config[genome]} ' \
-           '1 {wildcards.width} {params.fragment} {params.effective_genome_fraction} {wildcards.gap} {wildcards.escore}'
+    shell: 'TMP=$(mktemp -d sicerXXX); mkdir -p $TMP/sicer; mv {params.input_filename} $TMP; ' \
+           'SICER-rb.sh $TMP {params.input_filename} $TMP/sicer {config[genome]} ' \
+           '1 {wildcards.width} {params.fragment} {params.effective_genome_fraction} {wildcards.gap} {wildcards.escore}; ' \
+           'mv $TMP/sicer/*island* sicer/; rm -rf $TMP'
 
 rule download_span:
     output: 'bin/span-0.11.0.jar'
@@ -273,7 +260,7 @@ rule call_peaks_span:
     threads: 8
     log: 'span/logs/{sample}_{bin}_{fdr}_{gap}.log'
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} ' \
-           '--peaks {output} --model {wildcards.sample}_{wildcards.bin}.span --workdir span --threads {threads} ' \
+           '--peaks {output} --model span/fit/{wildcards.sample}_{wildcards.bin}.span --workdir span --threads {threads} ' \
            '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params}'
 
 rule all:
@@ -284,7 +271,6 @@ rule all:
          bws=expand('bw/{sample}.bw', sample=fastq_aligned_names()),
          bam_qc=expand('bams/qc/{sample}.phantom.tsv', sample=fastq_aligned_names()),
          bam_qc_pbc=expand('bams/qc/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
-         bams_deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names()),
          macs2_peaks=expand('macs2_{macs2_suffix}/{sample}_{macs2_suffix}_peaks.narrowPeak',
                             sample=fastq_aligned_names(),
                             macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
