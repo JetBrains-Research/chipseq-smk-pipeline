@@ -3,8 +3,7 @@ Technical ChIP-Seq snakelike pipeline - snakemake version of https://github.com/
 
 Launching Pipeline
 ------------------
-The only tool required to launch the pipeline is `conda`. You'll also need `bowtie2`
-indexes for the appropriate genome build.
+The only tool required to launch the pipeline is `conda`.
 * If `conda` is not installed,
 follow the instructions at
 [Conda website](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
