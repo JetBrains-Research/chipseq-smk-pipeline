@@ -10,6 +10,9 @@ MACS2_PARAMS_BROAD = '--broad --broad-cutoff 0.05'
 
 SICER_FRAGMENT = '150'
 
+SPAN_BIN=100
+SPAN_GAP=5
+SPAN_FDR=1E-6
 SPAN_PARAMS = ''
 SPAN_PARAMS_ATAC_SEQ = '--fragment 0'
 
@@ -109,10 +112,10 @@ rule align_single_sam:
          fastq=os.path.join(config['fastq_dir'], '{sample}.fastq'),
          indexes=rules.index_bowtie.output
     output: temp('bams/{sample}.sam')
-    threads: 8
+    threads: 4
     log: 'logs/bowtie/{sample}.log'
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata ' \
-           '--index {input.indexes}/{config[genome]} {input.fastq} {output}'
+           '--index {input.indexes}/{config[genome]} {input.fastq} {output} &> {log}'
 
 rule align_paired_sam:
     input:
@@ -120,10 +123,10 @@ rule align_paired_sam:
          second=os.path.join(config['fastq_dir'], '{sample}_2.fastq'),
          indexes=rules.index_bowtie.output
     output: temp('bams/{sample}.sam')
-    threads: 8
+    threads: 4
     log: 'logs/bowtie/{sample}.log'
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata --index {input.indexes}/{config[genome]} ' \
-           '-1 {input.first} -2 {input.second} {output}'
+           '-1 {input.first} -2 {input.second} {output} &> {log}'
 
 rule sam_to_bam:
     input: 'bams/{sample}.sam'
@@ -150,11 +153,12 @@ rule download_phantompeakqualtools:
            '--output {params.targz}; ' \
            'tar xvf {params.targz}'
 
+# This rule requires spp R package installed
 rule bam_qc_phantom:
     input:
          ppqt_dir=rules.download_phantompeakqualtools.output,
          bam='bams/{sample}.bam'
-    output: 'bams/qc/{sample}.phantom.tsv'
+    output: 'qc/phantom/{sample}.phantom.tsv'
     params:
           run_spp=lambda wildcards, input: os.path.join(str(input.ppqt_dir), 'run_spp.R')
     shell: 'Rscript {params.run_spp} -c={input.bam} -savp -out={output} -rf'
@@ -167,7 +171,7 @@ rule bam_to_pileup:
 
 rule bam_qc_pbc_nrf:
     input: rules.bam_to_pileup.output
-    output: 'bams/qc/{sample}.pbc_nrf.tsv'
+    output: 'qc/pbc_nrf/{sample}.pbc_nrf.tsv'
     params:
           tmp_dir='tmp'
     shell: '''
@@ -212,21 +216,21 @@ rule bam2bw:
          bai='bams/{filename}.bam.bai'
     output: 'bw/{filename, [^/]*}.bw'
     conda: 'envs/deeptools.env.yaml'
-    threads: 8
+    threads: 4
     shell: 'bamCoverage -b {input.bam} -p {threads} -o {output}'
 
 rule call_peaks_macs2:
     input: 'bams/{sample}.bam'
-    output: 'macs2_{macs2_suffix}/{sample}_{macs2_suffix}_peaks.{type}Peak'
+    output: 'macs2/{sample}_{macs2_suffix}_peaks.{type}Peak'
     params:
           macs2_params=config.get('macs2_params', MACS2_PARAMS),
           species=macs_species(config['genome']),
           outdir=lambda wildcards, output: os.path.dirname(str(output[0]))
     conda: 'envs/py27.env.yaml'
-    log: 'macs2_{macs2_suffix}/{sample}_{macs2_suffix}_macs2_{type}.log'
+    log: 'logs/macs2/macs2_{macs2_suffix}/{sample}_{macs2_suffix}_macs2_{type}.log'
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} ' \
            '-n {wildcards.sample}_{wildcards.macs2_suffix} -g {params.species} ' \
-           '{params.macs2_params}'
+           '{params.macs2_params} &> {log}'
 
 rule call_peaks_sicer:
     input:
@@ -239,10 +243,10 @@ rule call_peaks_sicer:
           effective_genome_fraction=lambda wildcards: effective_genome_fraction(
               config['genome'], str(rules.download_chrom_sizes.output))
     conda: 'envs/py27.env.yaml'
-    log: 'sicer/{sample}-W{width}-G{gap}-E{escore}_sicer.log'
-    shell: 'TMP=$(mktemp -d sicerXXX); mkdir -p $TMP/sicer; mv {params.input_filename} $TMP; ' \
-           'SICER-rb.sh $TMP {params.input_filename} $TMP/sicer {config[genome]} ' \
-           '1 {wildcards.width} {params.fragment} {params.effective_genome_fraction} {wildcards.gap} {wildcards.escore}; ' \
+    log: 'logs/sicer/{sample}-W{width}-G{gap}-E{escore}_sicer.log'
+    shell: 'TMP=$(mktemp -d sicerXXX); mkdir -p $TMP/sicer; cp {params.input_filename} $TMP; ' \
+           'SICER-rb.sh $TMP {params.input_filename} sicer {config[genome]} ' \
+           '1 {wildcards.width} {params.fragment} {params.effective_genome_fraction} {wildcards.gap} {wildcards.escore} &> {log}; ' \
            'mv $TMP/sicer/*island* sicer/; rm -rf $TMP'
 
 rule download_span:
@@ -257,11 +261,11 @@ rule call_peaks_span:
     params:
          span_params=config.get('span_params', SPAN_PARAMS)
     output: 'span/{sample}_{bin}_{fdr}_{gap}.peak'
-    threads: 8
-    log: 'span/logs/{sample}_{bin}_{fdr}_{gap}.log'
+    threads: 4
+    log: 'logs/span/{sample}_{bin}_{fdr}_{gap}.log'
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} ' \
            '--peaks {output} --model span/fit/{wildcards.sample}_{wildcards.bin}.span --workdir span --threads {threads} ' \
-           '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params}'
+           '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
 
 rule all:
     input:
@@ -269,10 +273,14 @@ rule all:
          multiqc_bowtie='multiqc/bowtie/multiqc.html',
          multiqc_samtools_stats='multiqc/samtools_stats/multiqc.html',
          bws=expand('bw/{sample}.bw', sample=fastq_aligned_names()),
-         bam_qc=expand('bams/qc/{sample}.phantom.tsv', sample=fastq_aligned_names()),
-         bam_qc_pbc=expand('bams/qc/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
-         macs2_peaks=expand('macs2_{macs2_suffix}/{sample}_{macs2_suffix}_peaks.narrowPeak',
+         # bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names()),
+         bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
+         macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
                             sample=fastq_aligned_names(),
                             macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
          sicer_peaks=expand('sicer/{sample}-W200-G600-E100.scoreisland', sample=fastq_aligned_names()),
-         span_peaks=expand('span/{sample}_100_0.01_5.peak', sample=fastq_aligned_names())
+         span_peaks=expand('span/{sample}_{span_bin}_{span_fdr}_{span_gap}.peak',
+                           sample=fastq_aligned_names(),
+                           span_bin=config.get('span_bin', SPAN_BIN),
+                           span_fdr=config.get('span_fdr', SPAN_FDR),
+                           span_gap=config.get('span_gap', SPAN_GAP))
