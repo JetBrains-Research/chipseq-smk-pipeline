@@ -10,9 +10,9 @@ MACS2_PARAMS_BROAD = '--broad --broad-cutoff 0.05'
 
 SICER_FRAGMENT = '150'
 
-SPAN_BIN=100
-SPAN_GAP=5
-SPAN_FDR=1E-6
+SPAN_BIN = 100
+SPAN_GAP = 5
+SPAN_FDR = 1E-6
 SPAN_PARAMS = ''
 SPAN_PARAMS_ATAC_SEQ = '--fragment 0'
 
@@ -136,7 +136,6 @@ rule sam_to_bam:
            'samtools sort {output}.unsorted -o {output}; ' \
            'rm {output}.unsorted;'
 
-
 rule index_bams:
     input: '{anywhere}/{sample}.bam'
     output: '{anywhere}/{sample, [^/]*}.bam.bai'
@@ -259,13 +258,27 @@ rule call_peaks_span:
          chrom_sizes=rules.download_chrom_sizes.output,
          bam='bams/{sample}.bam'
     params:
-         span_params=config.get('span_params', SPAN_PARAMS)
+          span_params=config.get('span_params', SPAN_PARAMS)
     output: 'span/{sample}_{bin}_{fdr}_{gap}.peak'
     threads: 4
     log: 'logs/span/{sample}_{bin}_{fdr}_{gap}.log'
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} ' \
            '--peaks {output} --model span/fit/{wildcards.sample}_{wildcards.bin}.span --workdir span --threads {threads} ' \
            '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
+
+rule call_peaks_span_tuned:
+    input:
+         span=rules.download_span.output,
+         chrom_sizes=rules.download_chrom_sizes.output,
+         bam='bams/{sample}.bam'
+    params:
+          span_markup=config.get('span_markup', '')
+    output: 'span/{sample}_{bin}_tuned.peak'
+    threads: 4
+    log: 'logs/span/{sample}_{bin}_tuned.log'
+    shell:
+         'java -Xmx8G -jar bin/span-0.11.0.build.jar analyze --model span/fit/{wildcards.sample}_{wildcards.bin}.span ' \
+         '--workdir span --threads {threads}  --labels {params.span_markup} --peaks {output} &> {log}'
 
 rule all:
     input:
@@ -283,4 +296,7 @@ rule all:
                            sample=fastq_aligned_names(),
                            span_bin=config.get('span_bin', SPAN_BIN),
                            span_fdr=config.get('span_fdr', SPAN_FDR),
-                           span_gap=config.get('span_gap', SPAN_GAP))
+                           span_gap=config.get('span_gap', SPAN_GAP)),
+         span_peaks=expand('span/{sample}_{span_bin}_tuned.peak',
+                           span_bin=config.get('span_bin', SPAN_BIN),
+                           sample=fastq_aligned_names())
