@@ -3,6 +3,9 @@ import os
 import re
 from glob import glob
 
+# Default for Nextera atacseq
+TRIM_ADAPTER = 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+
 MACS2_SUFFIX = 'q0.05'
 MACS2_PARAMS = '-q 0.05'
 MACS2_PARAMS_ATAC_SEQ = '-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits'
@@ -73,13 +76,15 @@ def effective_genome_fraction(genome, chrom_sizes_path):
 
 workdir: config['work_dir']
 
+localrules: download_chrom_sizes, download_fa, multiqc_fastq, download_phantompeakqualtools, multiqc_bowtie, bam_stats_multiqc, download_span
+
 rule download_chrom_sizes:
     output: '{}.chrom.sizes'.format(config['genome'])
     shell:
          'wget -O {output} http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes'
 
 rule download_fa:
-    output: os.path.join(config['work_dir'], directory('fa'))
+    output: directory('fa')
     shell: "rsync -avz --partial --exclude='*.txt' " \
            'rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && ' \
            'gunzip -f {output}/*.fa.gz'
@@ -91,6 +96,10 @@ rule index_bowtie:
           files_list=lambda wildcards: ','.join(glob('fa/*.fa')),
           target='indexes/{genome}'.format(genome=config['genome'])
     conda: 'envs/bio.env.yaml'
+    resources:
+        threads = 1,
+        mem = 16, mem_ram = 10,
+        time = 60 * 6
     shell: 'mkdir -p {output} && bowtie-build {params.files_list} {params.target}'
 
 rule fastqc:
@@ -99,6 +108,10 @@ rule fastqc:
           html='qc/fastqc/{sample}_fastqc.html',
           zip='qc/fastqc/{sample}_fastqc.zip'
     log: 'logs/fastqc/{sample}.log'
+    resources:
+        threads = 1,
+        mem = 8, mem_ram = 4,
+        time = 60 * 6
     wrapper: '0.31.1/bio/fastqc'
 
 rule multiqc_fastq:
@@ -107,24 +120,84 @@ rule multiqc_fastq:
     log: 'multiqc/fastqc/multiqc.log'
     wrapper: '0.31.1/bio/multiqc'
 
+rule cleaned_fastqc:
+    input: 'cleaned/{sample}.fastq'
+    output:
+          html='qc/cleaned/fastqc/{sample}_fastqc.html',
+          zip='qc/cleaned/fastqc/{sample}_fastqc.zip'
+    log: 'logs/cleaned/fastqc/{sample}.log'
+    resources:
+        threads = 1,
+        mem = 8, mem_ram = 4,
+        time = 60 * 6
+    wrapper: '0.31.1/bio/fastqc'
+
+rule cleaned_multiqc_fastq:
+    input: expand('qc/cleaned/fastqc/{sample}_fastqc.zip', sample=fastq_names())
+    output: 'multiqc/cleaned/fastqc/multiqc.html'
+    log: 'multiqc/cleaned/fastqc/multiqc.log'
+    wrapper: '0.31.1/bio/multiqc'
+
+rule cutadapt_single_sam:
+    input: os.path.join(config['fastq_dir'], '{sample}.fastq')
+    output: 'cleaned/{sample}_se.fastq'
+    threads: 4
+    log: 'logs/cutadapt/{sample}.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 6
+    conda: 'envs/bio.env.yaml'
+    shell: 'cutadapt -b {params.adapter} --cores {threads} --minimum-length 20 -q 30 --overlap=5 ' \
+           '-o {output} {input} &> {log}'
+
+rule cutadapt_paired_sam:
+    input:
+         first=os.path.join(config['fastq_dir'], '{sample}_1.fastq'),
+         second=os.path.join(config['fastq_dir'], '{sample}_2.fastq')
+    params:
+         adapter=config.get('trim_adapter', TRIM_ADAPTER)
+    output:
+         first='cleaned/{sample}_pe_1.fastq',
+         second='cleaned/{sample}_pe_2.fastq'
+    threads: 4
+    log: 'logs/cutadapt/{sample}.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 6
+    conda: 'envs/bio.env.yaml'
+    shell: 'cutadapt -b {params.adapter} --cores {threads} --minimum-length 20 -q 30 --overlap=5 --pair-filter=any ' \
+           '-o {output.first} -p {output.second} {input.first} {input.second} &> {log}'
+
 rule align_single_sam:
     input:
-         fastq=os.path.join(config['fastq_dir'], '{sample}.fastq'),
+         fastq='cleaned/{sample}_se.fastq',
          indexes=rules.index_bowtie.output
     output: temp('bams/{sample}.sam')
     threads: 4
     log: 'logs/bowtie/{sample}.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
+    conda: 'envs/bio.env.yaml'
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata ' \
            '--index {input.indexes}/{config[genome]} {input.fastq} {output} &> {log}'
 
 rule align_paired_sam:
     input:
-         first=os.path.join(config['fastq_dir'], '{sample}_1.fastq'),
-         second=os.path.join(config['fastq_dir'], '{sample}_2.fastq'),
+         first='cleaned/{sample}_pe_1.fastq',
+         second='cleaned/{sample}_pe_2.fastq',
          indexes=rules.index_bowtie.output
     output: temp('bams/{sample}.sam')
     threads: 4
     log: 'logs/bowtie/{sample}.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
+    conda: 'envs/bio.env.yaml'
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata --index {input.indexes}/{config[genome]} ' \
            '-1 {input.first} -2 {input.second} {output} &> {log}'
 
@@ -132,6 +205,10 @@ rule sam_to_bam:
     input: 'bams/{sample}.sam'
     output: 'bams/{sample}.bam'
     conda: 'envs/bio.env.yaml'
+    resources:
+        threads = 2,
+        mem = 8, mem_ram = 4,
+        time = 60 * 24
     shell: 'samtools view -bS {input} -o {output}.unsorted; ' \
            'samtools sort {output}.unsorted -o {output}; ' \
            'rm {output}.unsorted;'
@@ -216,6 +293,10 @@ rule bam2bw:
     output: 'bw/{filename, [^/]*}.bw'
     conda: 'envs/deeptools.env.yaml'
     threads: 4
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
     shell: 'bamCoverage -b {input.bam} -p {threads} -o {output}'
 
 rule call_peaks_macs2:
@@ -227,6 +308,10 @@ rule call_peaks_macs2:
           outdir=lambda wildcards, output: os.path.dirname(str(output[0]))
     conda: 'envs/py27.env.yaml'
     log: 'logs/macs2/macs2_{macs2_suffix}/{sample}_{macs2_suffix}_macs2_{type}.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} ' \
            '-n {wildcards.sample}_{wildcards.macs2_suffix} -g {params.species} ' \
            '{params.macs2_params} &> {log}'
@@ -243,6 +328,10 @@ rule call_peaks_sicer:
               config['genome'], str(rules.download_chrom_sizes.output))
     conda: 'envs/py27.env.yaml'
     log: 'logs/sicer/{sample}-W{width}-G{gap}-E{escore}_sicer.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
     shell: 'TMP=$(mktemp -d sicerXXX); mkdir -p $TMP/sicer; cp {params.input_filename} $TMP; ' \
            'SICER-rb.sh $TMP {params.input_filename} sicer {config[genome]} ' \
            '1 {wildcards.width} {params.fragment} {params.effective_genome_fraction} {wildcards.gap} {wildcards.escore} &> {log}; ' \
@@ -262,6 +351,10 @@ rule call_peaks_span:
     output: 'span/{sample}_{bin}_{fdr}_{gap}.peak'
     threads: 4
     log: 'logs/span/{sample}_{bin}_{fdr}_{gap}.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} ' \
            '--peaks {output} --model span/fit/{wildcards.sample}_{wildcards.bin}.span --workdir span --threads {threads} ' \
            '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
@@ -276,6 +369,10 @@ rule call_peaks_span_tuned:
     output: 'span/{sample}_{bin}_tuned.peak'
     threads: 4
     log: 'logs/span/{sample}_{bin}_tuned.log'
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 24
     shell:
          'java -Xmx8G -jar bin/span-0.11.0.build.jar analyze --model span/fit/{wildcards.sample}_{wildcards.bin}.span ' \
          '--workdir span --threads {threads}  --labels {params.span_markup} --peaks {output} &> {log}'
@@ -283,20 +380,21 @@ rule call_peaks_span_tuned:
 rule all:
     input:
          multiqc_fastq='multiqc/fastqc/multiqc.html',
+         # cleaned_multiqc_fastq='multiqc/cleaned/fastqc/multiqc.html',
          multiqc_bowtie='multiqc/bowtie/multiqc.html',
-         multiqc_samtools_stats='multiqc/samtools_stats/multiqc.html',
+         # multiqc_samtools_stats='multiqc/samtools_stats/multiqc.html',
          bws=expand('bw/{sample}.bw', sample=fastq_aligned_names()),
          # bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names()),
-         bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
+         # bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
          macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
                             sample=fastq_aligned_names(),
                             macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
-         sicer_peaks=expand('sicer/{sample}-W200-G600-E100.scoreisland', sample=fastq_aligned_names()),
+         # sicer_peaks=expand('sicer/{sample}-W200-G600-E100.scoreisland', sample=fastq_aligned_names()),
          span_peaks=expand('span/{sample}_{span_bin}_{span_fdr}_{span_gap}.peak',
                            sample=fastq_aligned_names(),
                            span_bin=config.get('span_bin', SPAN_BIN),
                            span_fdr=config.get('span_fdr', SPAN_FDR),
                            span_gap=config.get('span_gap', SPAN_GAP)),
-         span_peaks=expand('span/{sample}_{span_bin}_tuned.peak',
-                           span_bin=config.get('span_bin', SPAN_BIN),
-                           sample=fastq_aligned_names())
+         # span_tuned_peaks=expand('span/{sample}_{span_bin}_tuned.peak',
+         #                         span_bin=config.get('span_bin', SPAN_BIN),
+         #                         sample=fastq_aligned_names())

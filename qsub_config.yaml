@@ -1,0 +1,59 @@
+__default__:
+  system: "pbs"
+
+# default parameter for all rules
+# for steps, where memory/threads are not specified in the Snakefilecan
+
+  # `time`, `mem` defaults could be overridden from `resources:` section
+  time:    "20" # minutes
+  mem:     "4"  # GB
+
+  # `threads` defaults could be overridden by `threads`
+  threads: 1
+
+  #account: ""
+  #queue: "{{cookiecutter.default_queue}}" # auto-detection in our case
+  nodes: 1
+  merge_std: "oe"
+  log: "{log}"
+  # name: "{rule}"
+  sampleid: ""
+
+# Comma separated options keys list from rule 'params' section which could override default option
+# values
+  rule_params_options: "sampleid"
+
+# only parameters defined in key_mapping (see below) are passed to the command in the order specified.
+
+  # Example
+
+  #PBS -N fastq-dump_${WORK_DIR_NAME}_${FILE_NAME_WO_EXT}
+  #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
+  #PBS -j oe
+  #PBS -o ${OUTDIR}/${FILE_NAME_WO_EXT}_fastq_dump.log
+
+  command_options:
+    pbs:
+      command: "qsub"
+      key_mapping:
+        name: " -N sj{jobid}{sampleid}.{name}.{pid}"
+        # account: " -W group_list={account}"
+        # queue: " -q {queue}"
+
+        nodes: " -l nodes={nodes}" # -l has to be on first resource element
+        threads: ":ppn={threads},"
+        mem: "vmem={mem}gb,"
+        mem_ram: "mem={mem_ram}gb,"
+        time: "walltime={time}:00" #[[HH:]MM:]SS
+
+
+        merge_std: " -j {merge_std}" # merge stdout, stderr
+        log: " -o {log}_job.log"
+
+
+# specific parameters for certain rules, which need more time/memory
+
+#run_assembler:
+#  queue: bigmem
+#  time: 1710
+#   threads and memory defined in config file
