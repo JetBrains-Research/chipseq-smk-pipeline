@@ -3,8 +3,10 @@ import os
 import re
 from glob import glob
 
-# Default for Nextera atacseq
-TRIM_ADAPTER = 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+# Default for Nextera atacseq by Trim Galore
+TRIM_ADAPTER = 'CTGTCTCTTATA'
+TRIM_ADAPTER_REVERSE = 'TATAAGAGACAG'
+
 
 MACS2_SUFFIX = 'q0.05'
 MACS2_PARAMS = '-q 0.05'
@@ -140,6 +142,9 @@ rule cleaned_multiqc_fastq:
 
 rule cutadapt_single_sam:
     input: os.path.join(config['fastq_dir'], '{sample}.fastq')
+    params:
+         adapter=config.get('trim_adapter', TRIM_ADAPTER),
+         adapter_reverse=config.get('trim_adapter_reverse', TRIM_ADAPTER_REVERSE)
     output: 'cleaned/{sample}_se.fastq'
     threads: 4
     log: 'logs/cutadapt/{sample}.log'
@@ -148,7 +153,8 @@ rule cutadapt_single_sam:
         mem = 16, mem_ram = 12,
         time = 60 * 6
     conda: 'envs/bio.env.yaml'
-    shell: 'cutadapt -b {params.adapter} --cores {threads} --minimum-length 20 -q 30 --overlap=5 ' \
+    shell: 'cutadapt -b {params.adapter} -B {params.adapter_reverse} --cores {threads} ' \
+           '--minimum-length 20 -q 30 --overlap=5 ' \
            '-o {output} {input} &> {log}'
 
 rule cutadapt_paired_sam:
@@ -156,7 +162,8 @@ rule cutadapt_paired_sam:
          first=os.path.join(config['fastq_dir'], '{sample}_1.fastq'),
          second=os.path.join(config['fastq_dir'], '{sample}_2.fastq')
     params:
-         adapter=config.get('trim_adapter', TRIM_ADAPTER)
+         adapter=config.get('trim_adapter', TRIM_ADAPTER),
+         adapter_reverse=config.get('trim_adapter_reverse', TRIM_ADAPTER_REVERSE)
     output:
          first='cleaned/{sample}_pe_1.fastq',
          second='cleaned/{sample}_pe_2.fastq'
@@ -167,7 +174,8 @@ rule cutadapt_paired_sam:
         mem = 16, mem_ram = 12,
         time = 60 * 6
     conda: 'envs/bio.env.yaml'
-    shell: 'cutadapt -b {params.adapter} --cores {threads} --minimum-length 20 -q 30 --overlap=5 --pair-filter=any ' \
+    shell: 'cutadapt -b {params.adapter} -B {params.adapter_reverse} --cores {threads} ' \
+           '--minimum-length 20 -q 30 --overlap=5 --pair-filter=any ' \
            '-o {output.first} -p {output.second} {input.first} {input.second} &> {log}'
 
 rule align_single_sam:
