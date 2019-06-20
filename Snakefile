@@ -135,7 +135,7 @@ rule cleaned_multiqc_fastq:
     log: 'multiqc/cleaned/fastqc/multiqc.log'
     wrapper: '0.31.1/bio/multiqc'
 
-rule trim_single_sam:
+rule trim_single_fastq:
     input: os.path.join(config['fastq_dir'], '{sample}.fastq')
     output: 'cleaned/{sample}_se.fastq'
     threads: 4
@@ -146,9 +146,9 @@ rule trim_single_sam:
         time = 60 * 6
     conda: 'envs/bio.env.yaml'
     shell: 'trim_galore --cores {threads} --nextera {input} -o cleaned/ &> {log}; ' \
-           'mv cleaned/{sample}_val.fq {output}'
+           'mv cleaned/{wildcards.sample}_val.fq {output}'
 
-rule trim_paired_sam:
+rule trim_paired_fastq:
     input:
          first=os.path.join(config['fastq_dir'], '{sample}_1.fastq'),
          second=os.path.join(config['fastq_dir'], '{sample}_2.fastq')
@@ -163,7 +163,7 @@ rule trim_paired_sam:
         time = 60 * 6
     conda: 'envs/bio.env.yaml'
     shell: 'trim_galore --cores {threads} --nextera --paired {input.first} {input.second} -o cleaned/ &> {log}; ' \
-           'mv cleaned/{sample}_1_val_1.fq {output.first}; mv cleaned/{sample}_2_val_2.fq {output.second}'
+           'mv cleaned/{wildcards.sample}_1_val_1.fq {output.first}; mv cleaned/{wildcards.sample}_2_val_2.fq {output.second}'
 
 rule align_single_sam:
     input:
@@ -389,7 +389,7 @@ rule all:
                            sample=fastq_aligned_names(),
                            span_bin=config.get('span_bin', SPAN_BIN),
                            span_fdr=config.get('span_fdr', SPAN_FDR),
-                           span_gap=config.get('span_gap', SPAN_GAP)),
+                           span_gap=config.get('span_gap', SPAN_GAP))
          # span_tuned_peaks=expand('span/{sample}_{span_bin}_tuned.peak',
          #                         span_bin=config.get('span_bin', SPAN_BIN),
          #                         sample=fastq_aligned_names())
