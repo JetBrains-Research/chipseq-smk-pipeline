@@ -3,11 +3,6 @@ import os
 import re
 from glob import glob
 
-# Default for Nextera atacseq by Trim Galore
-TRIM_ADAPTER = 'CTGTCTCTTATA'
-TRIM_ADAPTER_REVERSE = 'TATAAGAGACAG'
-
-
 MACS2_SUFFIX = 'q0.05'
 MACS2_PARAMS = '-q 0.05'
 MACS2_PARAMS_ATAC_SEQ = '-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits'
@@ -140,43 +135,35 @@ rule cleaned_multiqc_fastq:
     log: 'multiqc/cleaned/fastqc/multiqc.log'
     wrapper: '0.31.1/bio/multiqc'
 
-rule cutadapt_single_sam:
+rule trim_single_sam:
     input: os.path.join(config['fastq_dir'], '{sample}.fastq')
-    params:
-         adapter=config.get('trim_adapter', TRIM_ADAPTER),
-         adapter_reverse=config.get('trim_adapter_reverse', TRIM_ADAPTER_REVERSE)
     output: 'cleaned/{sample}_se.fastq'
     threads: 4
-    log: 'logs/cutadapt/{sample}.log'
+    log: 'logs/trim/{sample}.log'
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 6
     conda: 'envs/bio.env.yaml'
-    shell: 'cutadapt -b {params.adapter} -B {params.adapter_reverse} --cores {threads} ' \
-           '--minimum-length 20 -q 30 --overlap=5 ' \
-           '-o {output} {input} &> {log}'
+    shell: 'trim_galore --cores {threads} --nextera {input} -o cleaned/ &> {log}; ' \
+           'mv cleaned/{sample}_val.fq {output}'
 
-rule cutadapt_paired_sam:
+rule trim_paired_sam:
     input:
          first=os.path.join(config['fastq_dir'], '{sample}_1.fastq'),
          second=os.path.join(config['fastq_dir'], '{sample}_2.fastq')
-    params:
-         adapter=config.get('trim_adapter', TRIM_ADAPTER),
-         adapter_reverse=config.get('trim_adapter_reverse', TRIM_ADAPTER_REVERSE)
     output:
          first='cleaned/{sample}_pe_1.fastq',
          second='cleaned/{sample}_pe_2.fastq'
     threads: 4
-    log: 'logs/cutadapt/{sample}.log'
+    log: 'logs/trim/{sample}.log'
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 6
     conda: 'envs/bio.env.yaml'
-    shell: 'cutadapt -b {params.adapter} -B {params.adapter_reverse} --cores {threads} ' \
-           '--minimum-length 20 -q 30 --overlap=5 --pair-filter=any ' \
-           '-o {output.first} -p {output.second} {input.first} {input.second} &> {log}'
+    shell: 'trim_galore --cores {threads} --nextera --paired {input.first} {input.second} -o cleaned/ &> {log}; ' \
+           'mv cleaned/{sample}_1_val_1.fq {output.first}; mv cleaned/{sample}_2_val_2.fq {output.second}'
 
 rule align_single_sam:
     input:
