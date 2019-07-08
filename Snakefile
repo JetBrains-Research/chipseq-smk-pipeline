@@ -10,7 +10,7 @@ MACS2_PARAMS_BROAD = '--broad --broad-cutoff 0.05'
 
 SICER_FRAGMENT = '150'
 
-SPAN_BIN = 100
+SPAN_BIN = 200
 SPAN_GAP = 5
 SPAN_FDR = 1E-6
 SPAN_PARAMS = ''
@@ -96,7 +96,7 @@ rule index_bowtie:
     resources:
         threads = 1,
         mem = 16, mem_ram = 10,
-        time = 60 * 6
+        time = 60 * 120
     shell: 'mkdir -p {output} && bowtie-build {params.files_list} {params.target}'
 
 rule fastqc:
@@ -108,7 +108,7 @@ rule fastqc:
     resources:
         threads = 1,
         mem = 8, mem_ram = 4,
-        time = 60 * 6
+        time = 60 * 120
     wrapper: '0.31.1/bio/fastqc'
 
 rule multiqc_fastq:
@@ -126,7 +126,7 @@ rule cleaned_fastqc:
     resources:
         threads = 1,
         mem = 8, mem_ram = 4,
-        time = 60 * 6
+        time = 60 * 120
     wrapper: '0.31.1/bio/fastqc'
 
 rule cleaned_multiqc_fastq:
@@ -135,7 +135,7 @@ rule cleaned_multiqc_fastq:
     log: 'multiqc/cleaned/fastqc/multiqc.log'
     wrapper: '0.31.1/bio/multiqc'
 
-rule trim_single_sam:
+rule trim_single_fastq:
     input: os.path.join(config['fastq_dir'], '{sample}.fastq')
     output: 'cleaned/{sample}_se.fastq'
     threads: 4
@@ -143,12 +143,12 @@ rule trim_single_sam:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 6
+        time = 60 * 120
     conda: 'envs/bio.env.yaml'
     shell: 'trim_galore --cores {threads} --nextera {input} -o cleaned/ &> {log}; ' \
-           'mv cleaned/{sample}_val.fq {output}'
+           'mv cleaned/{wildcards.sample}_val.fq {output}'
 
-rule trim_paired_sam:
+rule trim_paired_fastq:
     input:
          first=os.path.join(config['fastq_dir'], '{sample}_1.fastq'),
          second=os.path.join(config['fastq_dir'], '{sample}_2.fastq')
@@ -160,10 +160,10 @@ rule trim_paired_sam:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 6
+        time = 60 * 120
     conda: 'envs/bio.env.yaml'
     shell: 'trim_galore --cores {threads} --nextera --paired {input.first} {input.second} -o cleaned/ &> {log}; ' \
-           'mv cleaned/{sample}_1_val_1.fq {output.first}; mv cleaned/{sample}_2_val_2.fq {output.second}'
+           'mv cleaned/{wildcards.sample}_1_val_1.fq {output.first}; mv cleaned/{wildcards.sample}_2_val_2.fq {output.second}'
 
 rule align_single_sam:
     input:
@@ -175,7 +175,7 @@ rule align_single_sam:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     conda: 'envs/bio.env.yaml'
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata ' \
            '--index {input.indexes}/{config[genome]} {input.fastq} {output} &> {log}'
@@ -191,7 +191,7 @@ rule align_paired_sam:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     conda: 'envs/bio.env.yaml'
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata --index {input.indexes}/{config[genome]} ' \
            '-1 {input.first} -2 {input.second} {output} &> {log}'
@@ -203,7 +203,7 @@ rule sam_to_bam:
     resources:
         threads = 2,
         mem = 8, mem_ram = 4,
-        time = 60 * 24
+        time = 60 * 120
     shell: 'samtools view -bS {input} -o {output}.unsorted; ' \
            'samtools sort {output}.unsorted -o {output}; ' \
            'rm {output}.unsorted;'
@@ -212,6 +212,30 @@ rule index_bams:
     input: '{anywhere}/{sample}.bam'
     output: '{anywhere}/{sample, [^/]*}.bam.bai'
     wrapper: '0.31.1/bio/samtools/index'
+
+rule remove_duplicates:
+    input: "bams/{sample}.bam"
+    output:
+          bam="deduplicated/{sample}.bam",
+          metrics="qc/picard/{sample}.txt"
+    log: "deduplicated/{sample}.log"
+    threads: 4
+    resources:
+        threads = 4,
+        mem = 8, mem_ram = 4,
+        time = 60 * 120
+    params: "REMOVE_DUPLICATES=True"
+    wrapper: "0.31.1/bio/picard/markduplicates"
+
+rule remove_unmapped:
+    input: "bams/{sample}.bam"
+    output: "mapped/{sample}.bam"
+    conda: 'envs/bio.env.yaml'
+    resources:
+        threads = 2,
+        mem = 8, mem_ram = 4,
+        time = 60 * 120
+    shell: 'samtools view -b -F 4 {input} > {output}'
 
 rule download_phantompeakqualtools:
     output: directory('bin/phantompeakqualtools')
@@ -291,7 +315,7 @@ rule bam2bw:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     shell: 'bamCoverage -b {input.bam} -p {threads} -o {output}'
 
 rule call_peaks_macs2:
@@ -306,7 +330,7 @@ rule call_peaks_macs2:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} ' \
            '-n {wildcards.sample}_{wildcards.macs2_suffix} -g {params.species} ' \
            '{params.macs2_params} &> {log}'
@@ -326,7 +350,7 @@ rule call_peaks_sicer:
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     shell: 'TMP=$(mktemp -d sicerXXX); mkdir -p $TMP/sicer; cp {params.input_filename} $TMP; ' \
            'SICER-rb.sh $TMP {params.input_filename} sicer {config[genome]} ' \
            '1 {wildcards.width} {params.fragment} {params.effective_genome_fraction} {wildcards.gap} {wildcards.escore} &> {log}; ' \
@@ -344,12 +368,13 @@ rule call_peaks_span:
     params:
           span_params=config.get('span_params', SPAN_PARAMS)
     output: 'span/{sample}_{bin}_{fdr}_{gap}.peak'
+    conda: 'envs/java8.env.yaml'
     threads: 4
     log: 'logs/span/{sample}_{bin}_{fdr}_{gap}.log'
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} ' \
            '--peaks {output} --model span/fit/{wildcards.sample}_{wildcards.bin}.span --workdir span --threads {threads} ' \
            '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
@@ -362,12 +387,13 @@ rule call_peaks_span_tuned:
     params:
           span_markup=config.get('span_markup', '')
     output: 'span/{sample}_{bin}_tuned.peak'
+    conda: 'envs/java8.env.yaml'
     threads: 4
     log: 'logs/span/{sample}_{bin}_tuned.log'
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
-        time = 60 * 24
+        time = 60 * 120
     shell:
          'java -Xmx8G -jar bin/span-0.11.0.build.jar analyze --model span/fit/{wildcards.sample}_{wildcards.bin}.span ' \
          '--workdir span --threads {threads}  --labels {params.span_markup} --peaks {output} &> {log}'
@@ -379,6 +405,8 @@ rule all:
          multiqc_bowtie='multiqc/bowtie/multiqc.html',
          # multiqc_samtools_stats='multiqc/samtools_stats/multiqc.html',
          bws=expand('bw/{sample}.bw', sample=fastq_aligned_names()),
+         deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names()),
+         mapped=expand('mapped/{sample}.bam', sample=fastq_aligned_names()),
          # bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names()),
          # bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
          macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
@@ -389,7 +417,7 @@ rule all:
                            sample=fastq_aligned_names(),
                            span_bin=config.get('span_bin', SPAN_BIN),
                            span_fdr=config.get('span_fdr', SPAN_FDR),
-                           span_gap=config.get('span_gap', SPAN_GAP)),
+                           span_gap=config.get('span_gap', SPAN_GAP))
          # span_tuned_peaks=expand('span/{sample}_{span_bin}_tuned.peak',
          #                         span_bin=config.get('span_bin', SPAN_BIN),
          #                         sample=fastq_aligned_names())
