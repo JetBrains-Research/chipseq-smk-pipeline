@@ -14,7 +14,6 @@ SPAN_BIN = 200
 SPAN_GAP = 5
 SPAN_FDR = 1E-6
 SPAN_PARAMS = ''
-SPAN_PARAMS_ATAC_SEQ = '--fragment 0'
 
 print('CONFIG\n{}'.format('\n'.join(['{}: {}'.format(k, v) for k, v in config.items()])))
 
@@ -73,7 +72,7 @@ def effective_genome_fraction(genome, chrom_sizes_path):
 
 workdir: config['work_dir']
 
-localrules: download_chrom_sizes, download_fa, multiqc_fastq, download_phantompeakqualtools, multiqc_bowtie, bam_stats_multiqc, download_span
+localrules: download_chrom_sizes, download_fa, multiqc_fastq, download_phantompeakqualtools, multiqc_bowtie2, bam_stats_multiqc, download_span
 
 rule download_chrom_sizes:
     output: '{}.chrom.sizes'.format(config['genome'])
@@ -86,9 +85,9 @@ rule download_fa:
            'rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && ' \
            'gunzip -f {output}/*.fa.gz'
 
-rule index_bowtie:
+rule bowtie2_index:
     input: directory('fa')
-    output: os.path.join(config['work_dir'], directory('indexes'))
+    output: directory('bowtie2-index')
     params:
           files_list=lambda wildcards: ','.join(glob('fa/*.fa')),
           target='indexes/{genome}'.format(genome=config['genome'])
@@ -97,7 +96,7 @@ rule index_bowtie:
         threads = 1,
         mem = 16, mem_ram = 10,
         time = 60 * 120
-    shell: 'mkdir -p {output} && bowtie-build {params.files_list} {params.target}'
+    shell: 'mkdir -p {output} && bowtie2-build {params.files_list} {params.target}'
 
 rule fastqc:
     input: os.path.join(config['fastq_dir'], '{sample}.fastq')
@@ -165,48 +164,49 @@ rule trim_paired_fastq:
     shell: 'trim_galore --cores {threads} --nextera --paired {input.first} {input.second} -o cleaned/ &> {log}; ' \
            'mv cleaned/{wildcards.sample}_1_val_1.fq {output.first}; mv cleaned/{wildcards.sample}_2_val_2.fq {output.second}'
 
-rule align_single_sam:
+rule bowtie2_align_single:
     input:
-         fastq='cleaned/{sample}_se.fastq',
-         indexes=rules.index_bowtie.output
-    output: temp('bams/{sample}.sam')
+        sample="cleaned/{sample}_se.fastq",
+        index=rules.bowtie2_index.output
+    output: temp("bams/{sample}.bam.unsorted")
+    log: "logs/bowtie2/{sample}.log"
     threads: 4
-    log: 'logs/bowtie/{sample}.log'
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
-    shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata ' \
-           '--index {input.indexes}/{config[genome]} {input.fastq} {output} &> {log}'
+    params:
+          index="{input.index}",
+          extra="-X 2000 --dovetail"
+    wrapper: "0.31.1/bio/bowtie2/align"
 
-rule align_paired_sam:
+rule bowtie2_align_paired:
     input:
-         first='cleaned/{sample}_pe_1.fastq',
-         second='cleaned/{sample}_pe_2.fastq',
-         indexes=rules.index_bowtie.output
-    output: temp('bams/{sample}.sam')
+        sample=["cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"],
+        index=rules.bowtie2_index.output
+    output: temp("bams/{sample}.bam.unsorted")
+    log: "logs/bowtie2/{sample}.log"
     threads: 4
-    log: 'logs/bowtie/{sample}.log'
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
-    shell: 'bowtie -p {threads} -St -m 1 -v 3 --best --strata --index {input.indexes}/{config[genome]} ' \
-           '-1 {input.first} -2 {input.second} {output} &> {log}'
+    params:
+          index="{input.index}",
+          extra="-X 2000 --dovetail"    
+    wrapper: "0.31.1/bio/bowtie2/align"
 
-rule sam_to_bam:
-    input: 'bams/{sample}.sam'
-    output: 'bams/{sample}.bam'
+rule sort_bam:
+    input: '{anywhere}/{sample}.bam.unsorted'
+    output: '{anywhere}/{sample}.bam'
     conda: 'envs/bio.env.yaml'
     resources:
         threads = 2,
         mem = 8, mem_ram = 4,
         time = 60 * 120
-    shell: 'samtools view -bS {input} -o {output}.unsorted; ' \
-           'samtools sort {output}.unsorted -o {output}; ' \
-           'rm {output}.unsorted;'
+    shell: 'samtools sort {input} -o {output}'
 
 rule index_bams:
     input: '{anywhere}/{sample}.bam'
@@ -288,10 +288,10 @@ cat {input} | \
     }}') > {output}
     '''
 
-rule multiqc_bowtie:
-    input: expand('logs/bowtie/{sample}.log', sample=fastq_aligned_names())
-    output: 'multiqc/bowtie/multiqc.html'
-    log: 'multiqc/bowtie/multiqc.log'
+rule multiqc_bowtie2:
+    input: expand('logs/bowtie2/{sample}.log', sample=fastq_aligned_names())
+    output: 'multiqc/bowtie2/multiqc.html'
+    log: 'multiqc/bowtie2/multiqc.log'
     wrapper: '0.31.1/bio/multiqc'
 
 rule bam_stats:
@@ -402,22 +402,22 @@ rule all:
     input:
          multiqc_fastq='multiqc/fastqc/multiqc.html',
          # cleaned_multiqc_fastq='multiqc/cleaned/fastqc/multiqc.html',
-         multiqc_bowtie='multiqc/bowtie/multiqc.html',
+         multiqc_bowtie2='multiqc/bowtie2/multiqc.html',
          # multiqc_samtools_stats='multiqc/samtools_stats/multiqc.html',
          bws=expand('bw/{sample}.bw', sample=fastq_aligned_names()),
-         deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names()),
-         mapped=expand('mapped/{sample}.bam', sample=fastq_aligned_names()),
+         # deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names()),
+         # mapped=expand('mapped/{sample}.bam', sample=fastq_aligned_names()),
          # bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names()),
          # bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
-         macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
-                            sample=fastq_aligned_names(),
-                            macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
+         # macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
+         #                    sample=fastq_aligned_names(),
+         #                    macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
          # sicer_peaks=expand('sicer/{sample}-W200-G600-E100.scoreisland', sample=fastq_aligned_names()),
-         span_peaks=expand('span/{sample}_{span_bin}_{span_fdr}_{span_gap}.peak',
-                           sample=fastq_aligned_names(),
-                           span_bin=config.get('span_bin', SPAN_BIN),
-                           span_fdr=config.get('span_fdr', SPAN_FDR),
-                           span_gap=config.get('span_gap', SPAN_GAP))
+         # span_peaks=expand('span/{sample}_{span_bin}_{span_fdr}_{span_gap}.peak',
+         #                   sample=fastq_aligned_names(),
+         #                   span_bin=config.get('span_bin', SPAN_BIN),
+         #                   span_fdr=config.get('span_fdr', SPAN_FDR),
+         #                   span_gap=config.get('span_gap', SPAN_GAP))
          # span_tuned_peaks=expand('span/{sample}_{span_bin}_tuned.peak',
          #                         span_bin=config.get('span_bin', SPAN_BIN),
          #                         sample=fastq_aligned_names())
