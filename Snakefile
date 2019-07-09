@@ -90,7 +90,7 @@ rule bowtie2_index:
     output: directory('bowtie2-index')
     params:
           files_list=lambda wildcards: ','.join(glob('fa/*.fa')),
-          target='indexes/{genome}'.format(genome=config['genome'])
+          target='bowtie2-index/{genome}'.format(genome=config['genome'])
     conda: 'envs/bio.env.yaml'
     resources:
         threads = 1,
@@ -168,7 +168,7 @@ rule bowtie2_align_single:
     input:
         sample="cleaned/{sample}_se.fastq",
         index=rules.bowtie2_index.output
-    output: temp("bams/{sample}.bam.unsorted")
+    output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
     resources:
@@ -185,7 +185,7 @@ rule bowtie2_align_paired:
     input:
         sample=["cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"],
         index=rules.bowtie2_index.output
-    output: temp("bams/{sample}.bam.unsorted")
+    output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
     resources:
@@ -198,15 +198,15 @@ rule bowtie2_align_paired:
           extra="-X 2000 --dovetail"    
     wrapper: "0.31.1/bio/bowtie2/align"
 
-rule sort_bam:
-    input: '{anywhere}/{sample}.bam.unsorted'
+rule filter_sort_bam:
+    input: '{anywhere}/{sample}.bam.raw'
     output: '{anywhere}/{sample}.bam'
     conda: 'envs/bio.env.yaml'
     resources:
         threads = 2,
         mem = 8, mem_ram = 4,
         time = 60 * 120
-    shell: 'samtools sort {input} -o {output}'
+    shell: 'samtools view -bh -f2 -q30 {input} > {output}.filtered; samtools sort {output}.filtered -o {output}; rm {output}.filtered'
 
 rule index_bams:
     input: '{anywhere}/{sample}.bam'
