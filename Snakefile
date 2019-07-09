@@ -165,7 +165,8 @@ rule trim_paired_fastq:
            'mv cleaned/{wildcards.sample}_1_val_1.fq {output.first}; mv cleaned/{wildcards.sample}_2_val_2.fq {output.second}'
 
 rule bowtie2_align_single:
-    input: "cleaned/{sample}_se.fastq"
+    input:
+        sample="cleaned/{sample}_se.fastq"
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
@@ -175,12 +176,13 @@ rule bowtie2_align_single:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=os.path.join(config['work_dir'], rules.bowtie2_index.output, config['genome']),
+          index=os.path.join(config['work_dir'], str(rules.bowtie2_index.output), config['genome']),
           extra="-X 2000 --dovetail"
     wrapper: "0.31.1/bio/bowtie2/align"
 
 rule bowtie2_align_paired:
-    input: "cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"
+    input:
+        sample=["cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"]
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
@@ -190,7 +192,7 @@ rule bowtie2_align_paired:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=os.path.join(config['work_dir'], rules.bowtie2_index.output, config['genome']),
+          index=os.path.join(config['work_dir'], str(rules.bowtie2_index.output), config['genome']),
           extra="-X 2000 --dovetail"    
     wrapper: "0.31.1/bio/bowtie2/align"
 
