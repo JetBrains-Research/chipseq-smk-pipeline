@@ -144,7 +144,7 @@ rule trim_single_fastq:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
-    shell: 'trim_galore --cores {threads} --nextera {input} -o cleaned/ &> {log}; ' \
+    shell: 'trim_galore --cores {threads} {input} -o cleaned/ &> {log}; ' \
            'mv cleaned/{wildcards.sample}_val.fq {output}'
 
 rule trim_paired_fastq:
@@ -161,7 +161,7 @@ rule trim_paired_fastq:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
-    shell: 'trim_galore --cores {threads} --nextera --paired {input.first} {input.second} -o cleaned/ &> {log}; ' \
+    shell: 'trim_galore --cores {threads} --paired {input.first} {input.second} -o cleaned/ &> {log}; ' \
            'mv cleaned/{wildcards.sample}_1_val_1.fq {output.first}; mv cleaned/{wildcards.sample}_2_val_2.fq {output.second}'
 
 rule bowtie2_align_single:
@@ -176,8 +176,7 @@ rule bowtie2_align_single:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=os.path.join(config['work_dir'], str(rules.bowtie2_index.output), config['genome']),
-          extra="-X 2000 --dovetail"
+          index=os.path.join(config['work_dir'], str(rules.bowtie2_index.output), config['genome'])
     wrapper: "0.31.1/bio/bowtie2/align"
 
 rule bowtie2_align_paired:
