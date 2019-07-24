@@ -145,7 +145,7 @@ rule trim_single_fastq:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     shell: 'trim_galore --cores {threads} {input} -o cleaned/ &> {log}; ' \
-           'mv cleaned/{wildcards.sample}_val.fq {output}'
+           'mv cleaned/{wildcards.sample}_trimmed.fq {output}'
 
 rule trim_paired_fastq:
     input:
@@ -166,7 +166,8 @@ rule trim_paired_fastq:
 
 rule bowtie2_align_single:
     input:
-        sample="cleaned/{sample}_se.fastq"
+        sample=["cleaned/{sample}_se.fastq"],
+        bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
@@ -176,12 +177,14 @@ rule bowtie2_align_single:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=os.path.join(config['work_dir'], str(rules.bowtie2_index.output), config['genome'])
+          index=lambda wilcards, input : os.path.join(config['work_dir'], str(input.bowtie2_index_path), config['genome']),
+          extra=''
     wrapper: "0.31.1/bio/bowtie2/align"
 
 rule bowtie2_align_paired:
     input:
-        sample=["cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"]
+        sample=["cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"],
+        bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
@@ -191,7 +194,7 @@ rule bowtie2_align_paired:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=os.path.join(config['work_dir'], str(rules.bowtie2_index.output), config['genome']),
+          index=lambda wilcards, input : os.path.join(config['work_dir'], str(input.bowtie2_index_path), config['genome']),
           extra="-X 2000 --dovetail"    
     wrapper: "0.31.1/bio/bowtie2/align"
 
@@ -406,9 +409,9 @@ rule all:
          # mapped=expand('mapped/{sample}.bam', sample=fastq_aligned_names()),
          # bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names()),
          # bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names()),
-         # macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
-         #                    sample=fastq_aligned_names(),
-         #                    macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
+         macs2_peaks=expand('macs2/{sample}_{macs2_suffix}_peaks.narrowPeak',
+                            sample=fastq_aligned_names(),
+                            macs2_suffix=config.get('macs2_suffix', MACS2_SUFFIX)),
          # sicer_peaks=expand('sicer/{sample}-W200-G600-E100.scoreisland', sample=fastq_aligned_names()),
          # span_peaks=expand('span/{sample}_{span_bin}_{span_fdr}_{span_gap}.peak',
          #                   sample=fastq_aligned_names(),
