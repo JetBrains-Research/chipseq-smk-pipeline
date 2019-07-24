@@ -185,7 +185,7 @@ rule bowtie2_align_paired:
     input:
         sample=["cleaned/{sample}_pe_1.fastq", "cleaned/{sample}_pe_2.fastq"],
         bowtie2_index_path=rules.bowtie2_index.output
-    output: temp("bams/{sample}.bam.raw")
+    output: temp("bams/{sample}.bam2.raw")
     log: "logs/bowtie2/{sample}.log"
     threads: 4
     resources:
@@ -198,8 +198,18 @@ rule bowtie2_align_paired:
           extra="-X 2000 --dovetail"    
     wrapper: "0.31.1/bio/bowtie2/align"
 
-rule filter_sort_bam:
+rule filter_sort_bam_single:
     input: '{anywhere}/{sample}.bam.raw'
+    output: '{anywhere}/{sample}.bam'
+    conda: 'envs/bio.env.yaml'
+    resources:
+        threads = 2,
+        mem = 8, mem_ram = 4,
+        time = 60 * 120
+    shell: 'samtools view -bh -q30 {input} > {output}.filtered; samtools sort {output}.filtered -o {output}; rm {output}.filtered'
+
+rule filter_sort_bam_paired:
+    input: '{anywhere}/{sample}.bam2.raw'
     output: '{anywhere}/{sample}.bam'
     conda: 'envs/bio.env.yaml'
     resources:
