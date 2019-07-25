@@ -177,7 +177,9 @@ rule bowtie2_align_single:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=lambda wilcards, input : os.path.join(config['work_dir'], str(input.bowtie2_index_path), config['genome']),
+          index=lambda wildcards, input : os.path.join(
+              config['work_dir'], str(input.bowtie2_index_path), config['genome']
+          ),
           extra=''
     wrapper: "0.31.1/bio/bowtie2/align"
 
@@ -194,7 +196,9 @@ rule bowtie2_align_paired:
         time = 60 * 120
     conda: 'envs/bio.env.yaml'
     params:
-          index=lambda wilcards, input : os.path.join(config['work_dir'], str(input.bowtie2_index_path), config['genome']),
+          index=lambda wildcards, input : os.path.join(
+              config['work_dir'], str(input.bowtie2_index_path), config['genome']
+          ),
           extra="-X 2000 --dovetail"    
     wrapper: "0.31.1/bio/bowtie2/align"
 
