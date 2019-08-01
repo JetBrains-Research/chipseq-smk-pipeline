@@ -2,4 +2,4 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - snakemake-minimal=5.2.4
+  - snakemake-minimal=5.5.4
