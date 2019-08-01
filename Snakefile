@@ -375,9 +375,12 @@ rule call_peaks_span:
         gap = config["span_gap"],
         span_params=config['span_params'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 120
     shell:
-        'java -Xmx3G -jar {input.span} analyze -t {input.signal} --chrom.sizes {'
-        'input.chrom_sizes} '
+        'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
         '--peaks {output.peaks} --model {output.model} --workdir span --threads {threads} '
         '--bin {wildcards.bin} --fdr {params.fdr} --gap {params.gap} {params.span_params} &> {log}'
 
