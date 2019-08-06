@@ -11,7 +11,7 @@ follow the instructions at
 
 Create a Conda environment for `snakemake`:
 ```bash
-$ conda env create --file envs/snakemake.yaml --name snakemake
+$ conda env create --file ./environment.yaml --name snakemake
 ```
 Activate the newly created environment:
 ```bash
@@ -43,3 +43,22 @@ $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.
     macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
     span_params="--fragment 0" bin=100
 ```
+
+Pipeline Description
+-----
+Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`. 
+Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property. FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
+
+
+| Folder | Description |
+| --- | --- |
+| `./config.yaml` | Default pipeline options |
+| `./trimmed` | Trimmed FASTQ file, if `trim_reads` option is True. BAM files will contain trimmed reads in this case |
+| `./bams` | BAMs with aligned reads, `MAPQ >= 30` |
+| `./deduplicated` | Deduplicated version of `./bams` files |
+| `./macs2` | MACS2 peaks |
+| `./sicer` | SICER peaks |
+| `./span` | SPAN peaks |
+| `./multiqc` | MultiQC reports for different steps |
+| `./qc` | QC Reports |
+| `./logs` | Shell commands logs |
