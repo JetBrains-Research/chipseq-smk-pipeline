@@ -35,7 +35,7 @@ rule call_peaks_macs2:
     output: 'macs2/{sample}_{macs2_suffix}_peaks.{type}Peak'
     log: 'logs/macs2/macs2_{macs2_suffix}/{sample}_{macs2_suffix}_macs2_{type}.log'
 
-    conda: 'envs/py27.env.yaml'
+    conda: '../envs/py27.env.yaml'
     params:
         macs2_params=config['macs2_params'],
         species=macs_species(config['genome']),

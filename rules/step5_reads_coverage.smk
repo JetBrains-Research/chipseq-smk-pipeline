@@ -10,7 +10,7 @@ rule step5_reads_coverage_results:
 rule index_bams:
     input: '{anywhere}/{sample}.bam'
     output: '{anywhere}/{sample}.bam.bai'
-    log: 'logs/{anywhere}/{sample}.bam.bai.log'
+    log: 'logs/bams_index/{anywhere}/{sample}.bam.bai.log'
     wrapper: '0.36.0/bio/samtools/index'
 
 rule bam2bw:
@@ -20,7 +20,7 @@ rule bam2bw:
     output: 'bw/{filename, [^/]*}.bw'
     log: 'logs/bw/{filename}.log'
 
-    conda: 'envs/deeptools.env.yaml'
+    conda: '../envs/deeptools.env.yaml'
     threads: 4
     resources:
         threads = 4,

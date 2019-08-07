@@ -3,15 +3,16 @@ from pipeline_util import *
 configfile: "config.yaml"
 workdir: config['work_dir']
 
-include: "step1_raw_qc.smk"
-include: "step2_trim_fastq.smk"
-include: "step3_alignment.smk"
-include: "step4_filter_aligned_reads.smk"
-include: "step5_reads_coverage.smk"
-include: "step6_bam_quality_metrics.smk"
-include: "step7_macs2.smk"
-include: "step8_sicer.smk"
-include: "step9_span.smk"
+
+include: "rules/step1_raw_qc.smk"
+include: "rules/step2_trim_fastq.smk"
+include: "rules/step3_alignment.smk"
+include: "rules/step4_filter_aligned_reads.smk"
+include: "rules/step5_reads_coverage.smk"
+include: "rules/step6_bam_quality_metrics.smk"
+include: "rules/step7_macs2.smk"
+include: "rules/step8_sicer.smk"
+include: "rules/step9_span.smk"
 
 wildcard_constraints:
     sample="[^/]+"

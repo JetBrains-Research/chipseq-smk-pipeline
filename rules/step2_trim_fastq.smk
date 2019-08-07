@@ -20,11 +20,11 @@ rule trim_single_fastq:
         threads=4,
         mem=16, mem_ram=12,
         time=60 * 120
-    conda: 'envs/bio.env.yaml'
+    conda: '../envs/bio.env.yaml'
     # params:
     #     extra = "--cores {threads}" # "--illumina -q 20"
     # wrapper: '0.36.0/bio/trim_galore/se' # only 0.4.3 trim galore version
-    conda: 'envs/bio.env.yaml'
+    conda: '../envs/bio.env.yaml'
     params:
         extra=lambda wildcards, threads: f"--gzip --cores {threads}",  # "--illumina -q 20"
         out_dir="trimmed"
@@ -57,7 +57,7 @@ rule trim_paired_fastq:
     params:
         extra=lambda wildcards, threads: f"--gzip --cores {threads}",  # "--illumina -q 20"
         out_dir="trimmed"
-    conda: 'envs/bio.env.yaml'
+    conda: '../envs/bio.env.yaml'
     shell:
         "trim_galore {params.extra} --paired -o {params.out_dir} {input} &> {log} &&"
         " mv trimmed/{wildcards.sample}_1_val_1.fq.gz {output.fq1} &>> {log} &&"

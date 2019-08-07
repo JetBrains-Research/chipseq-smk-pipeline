@@ -29,7 +29,7 @@ rule install_spp:
     log: 'logs/spp/installation.log'
 
     conda: "envs/phantom.env.yaml"
-    script: "spp_install.R"
+    script: "../scripts/spp_install.R"
 
 
 # This rule requires spp R package installed

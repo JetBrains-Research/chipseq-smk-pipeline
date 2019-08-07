@@ -44,7 +44,7 @@ rule call_peaks_span:
         model='span/fit/{sample}_{bin}.span'
     log: f'logs/span/{{sample}}_{{bin}}{config["span_fdr"]}_{config["span_gap"]}.log'
 
-    conda: 'envs/java8.env.yaml'
+    conda: '../envs/java8.env.yaml'
     threads: 4
     params:
         fdr = config["span_fdr"],
@@ -84,7 +84,7 @@ rule call_peaks_span_tuned:
     output: 'span/{sample}_{bin}_tuned.peak'
     log: 'logs/span/{sample}_{bin}_tuned.log'
 
-    conda: 'envs/java8.env.yaml'
+    conda: '../envs/java8.env.yaml'
     threads: 4
     resources:
         threads = 4,

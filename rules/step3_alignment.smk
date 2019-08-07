@@ -31,7 +31,7 @@ rule bowtie2_index:
     output: directory('bowtie2-index')
     log: 'logs/bowtie2/bowtie2-index.log'
 
-    conda: 'envs/bio.env.yaml'
+    conda: '../envs/bio.env.yaml'
     params:
         files_list=lambda wildcards: ','.join(glob('fa/*.fa.gz')),
         target='bowtie2-index/{genome}'.format(genome=config['genome'])
@@ -69,7 +69,7 @@ rule bowtie2_align_paired:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 120
-    conda: 'envs/bio.env.yaml'
+    conda: '../envs/bio.env.yaml'
     params:
         index=lambda wildcards, input: os.path.join(
             str(input.bowtie2_index_path), config['genome']
