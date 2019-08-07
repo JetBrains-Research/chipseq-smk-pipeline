@@ -4,16 +4,15 @@ from glob import glob
 
 from match_control import find_control_for
 
-def fastq_files(config):
+def fastq_paths(config):
     fq_dir = config['fastq_dir']
     fq_ext = config['fastq_ext']
     return list(glob(os.path.join(fq_dir, '*.' + fq_ext)))
 
 
-# TODO: consider basenames here!
 def fastq_names_wo_ext(config):
     # file name w/o ext and parent folders: supports *.fastq and *.fastq.gz
-    return [_split_to_fname_and_ext(f)[0] for f in fastq_files(config)]
+    return [_split_to_fname_and_ext(f)[0] for f in fastq_paths(config)]
 
 
 def fastq_aligned_names(config):
@@ -21,7 +20,7 @@ def fastq_aligned_names(config):
 
 
 def sample_2_control(config):
-    fq_files = fastq_files(config)
+    fq_files = fastq_paths(config)
 
     result = {}
     for fq_path in fq_files:
@@ -94,21 +93,8 @@ def is_trimmed(config):
 
 
 def trimmed_fastq_sample_names(config):
-    trimmed_names = []
-
-    for fq_wo_ext in fastq_names_wo_ext(config):
-        sample = os.path.basename(fq_wo_ext)
-        paired_end_suffix = sample[-2:]
-        if paired_end_suffix in ['_1', '_2']:
-            # pared-end
-            # trimmed_names.append(f"{sample}_val{paired_end_suffix}"),
-            # TODO: cleanup
-            trimmed_names.append(f"{sample}_trimmed")
-        else:
-            # single-end
-            trimmed_names.append(f"{sample}_trimmed")
-
-    return trimmed_names
+    # here `name` could have _1 and _2 suffix in case of paired reads
+    return [f"{name}_trimmed" for name in fastq_names_wo_ext(config)]
 
 
 def effective_genome_fraction(genome, chrom_sizes_path, pileup_bed):
@@ -192,3 +178,26 @@ def labels2files(config):
             labels2files_dict[label_name] = f
 
     return labels2files_dict
+
+
+def bowtie2_input_paths(config, paired):
+    if is_trimmed(config):
+        if paired:
+            return [
+                f"trimmed/{{sample}}_1_trimmed.{trim_galore_file_suffix(config)}",
+                f"trimmed/{{sample}}_2_trimmed.{trim_galore_file_suffix(config)}"
+            ]
+        else:
+            return [
+                f"trimmed/{{sample}}_trimmed.{trim_galore_file_suffix(config)}",
+            ]
+    else:
+        if paired:
+            return [
+                config['fastq_dir'] + f"/{{sample}}_1.{config['fastq_ext']}",
+                config['fastq_dir'] + f"/{{sample}}_2.{config['fastq_ext']}",
+            ]
+        else:
+            return [
+                config['fastq_dir'] + f"/{{sample}}.{config['fastq_ext']}"
+            ]

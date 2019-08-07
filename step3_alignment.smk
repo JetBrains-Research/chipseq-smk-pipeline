@@ -35,7 +35,7 @@ rule bowtie2_index:
 # Align
 rule bowtie2_align_single:
     input:
-        sample=[("trimmed" if is_trimmed(config) else config['fastq_dir']) + f"/{{sample}}.{config['fastq_ext']}"],
+        sample=bowtie2_input_paths(config, False),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
@@ -52,21 +52,9 @@ rule bowtie2_align_single:
         extra=''
     wrapper: "0.36.0/bio/bowtie2/align"
 
-def bowtie2_paired_input_paths(config):
-    if is_trimmed(config):
-        return [
-            f"trimmed/{{sample}}_1_trimmed.{trim_galore_file_suffix(config)}",
-            f"trimmed/{{sample}}_2_trimmed.{trim_galore_file_suffix(config)}"
-        ]
-    else:
-        return [
-            config['fastq_dir'] + f"/{{sample}}_1.{config['fastq_ext']}",
-            config['fastq_dir'] + f"/{{sample}}_2.{config['fastq_ext']}",
-        ]
-
 rule bowtie2_align_paired:
     input:
-        sample=bowtie2_paired_input_paths(config),
+        sample=bowtie2_input_paths(config, True),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bowtie2/{sample}.log"
