@@ -57,7 +57,7 @@ rule call_peaks_span:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
-        'java -Xmx3G -jar {input.span} analyze -t {input.signal} --chrom.sizes {'
+        'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {'
         'input.chrom_sizes} '
         '--peaks {output.peaks} --model {output.model} --workdir span --threads {threads} '
         '--bin {wildcards.bin} --fdr {params.fdr} --gap {params.gap} {params.span_params} &> {log}'
@@ -91,5 +91,5 @@ rule call_peaks_span_tuned:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
-        'java -Xmx3G -jar bin/span-0.11.0.jar analyze --model {input.model} '
+        'java -Xmx8G -jar bin/span-0.11.0.jar analyze --model {input.model} '
         '--workdir span --threads {threads}  --labels {input.span_markup} --peaks {output} &> {log}'
