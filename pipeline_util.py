@@ -79,15 +79,6 @@ def _paired_fastq_samples_names(config):
     return [sample for sample in paired_samples if sample + '_2' in fq_names]
 
 
-# TODO: simplify: replace with "fq.gz" always and use --gzip option for trim galore
-def trim_galore_file_suffix(config):
-    fastq_ext = config['fastq_ext']
-    if fastq_ext.endswith(".gz"):
-        return "fq.gz"
-    else:
-        return "fq"
-
-
 def is_trimmed(config):
     return bool(config['trim_reads'])
 
@@ -184,12 +175,12 @@ def bowtie2_input_paths(config, paired):
     if is_trimmed(config):
         if paired:
             return [
-                f"trimmed/{{sample}}_1_trimmed.{trim_galore_file_suffix(config)}",
-                f"trimmed/{{sample}}_2_trimmed.{trim_galore_file_suffix(config)}"
+                "trimmed/{sample}_1_trimmed.fq.gz",
+                "trimmed/{sample}_2_trimmed.fq.gz"
             ]
         else:
             return [
-                f"trimmed/{{sample}}_trimmed.{trim_galore_file_suffix(config)}",
+                "trimmed/{sample}_trimmed.fq.gz",
             ]
     else:
         if paired:
