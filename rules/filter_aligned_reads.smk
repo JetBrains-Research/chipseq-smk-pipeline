@@ -1,9 +1,9 @@
 from pipeline_util import *
 
-localrules: step4_filter_aligned_reads_results, bam_filtered_multiqc
+localrules: all_filter_aligned_reads_results, bam_filtered_multiqc
 
 ######## Step: Alignment QC ##################
-rule step4_filter_aligned_reads_results:
+rule all_filter_aligned_reads_results:
     input:
          bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(config)),
          multiqc_bam_raw='multiqc/bam_raw/multiqc.html',
@@ -33,7 +33,7 @@ rule bam_filtered_stats:
 rule bam_filtered_multiqc:
     input:
         expand(
-            'qc/bam_filtered_samtools_stats/{sample}.txt',
+            'qc/bams_filtered_samtools_stats/{sample}.txt',
             sample=fastq_aligned_names(config)
         )
     output: 'multiqc/bam_filtered/multiqc.html'

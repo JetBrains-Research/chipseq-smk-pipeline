@@ -1,9 +1,9 @@
 from pipeline_util import *
 
-localrules: step7_macs2_results
+localrules: all_macs2_results
 
 ######## Step: Call peaks MACS2 ##################
-rule step7_macs2_results:
+rule all_macs2_results:
     input:
         macs2_peaks=expand(
             'macs2/{sample}_{macs2_suffix}_peaks.{type}Peak',

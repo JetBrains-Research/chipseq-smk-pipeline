@@ -1,9 +1,9 @@
 from pipeline_util import *
 
-localrules: step6_bam_quality_metrics_results
+localrules: all_bam_quality_metrics_results
 
 ######## Step: BAMS QC Metrics ##################
-rule step6_bam_quality_metrics_results:
+rule all_bam_quality_metrics_results:
     input:
         bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names(config)),
         bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names(config)),
@@ -13,7 +13,7 @@ rule download_phantompeakqualtools:
     output: directory('bin/phantompeakqualtools')
     log: 'logs/phantompeakqualtools.log'
 
-    conda: "envs/phantom.env.yaml"
+    conda: "../envs/phantom.env.yaml"
     params:
           targz='phantompeakqualtools.tar.gz'
     shell:
@@ -28,7 +28,7 @@ rule install_spp:
     output: touch('flags/spp.installed')
     log: 'logs/spp/installation.log'
 
-    conda: "envs/phantom.env.yaml"
+    conda: "../envs/phantom.env.yaml"
     script: "../scripts/spp_install.R"
 
 
@@ -43,7 +43,7 @@ rule bam_qc_phantom:
         pdf='qc/phantom/{sample}.pdf',
     log: 'logs/phantom/{sample}.phantom.tsv'
 
-    conda: "envs/phantom.env.yaml"
+    conda: "../envs/phantom.env.yaml"
     params:
           run_spp=lambda wildcards, input: os.path.join(str(input.ppqt_dir), 'run_spp.R')
 

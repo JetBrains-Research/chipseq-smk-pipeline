@@ -1,9 +1,9 @@
 from pipeline_util import *
 
-localrules: step5_reads_coverage_results
+localrules: all_reads_coverage_results
 
 ######## Step: Visualization: Reads coverage ##################
-rule step5_reads_coverage_results:
+rule all_reads_coverage_results:
     input:
          bws=expand('bw/{sample}.bw', sample=fastq_aligned_names(config)),
 

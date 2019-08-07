@@ -1,10 +1,10 @@
 from pipeline_util import *
 
 ruleorder: bowtie2_align_paired > bowtie2_align_single
-localrules: step3_alignment_results, download_chrom_sizes, download_fa, bam_raw_multiqc
+localrules: all_alignment_results, download_chrom_sizes, download_fa, bam_raw_multiqc
 
 ######## Step: Alignment QC ##################
-rule step3_alignment_results:
+rule all_alignment_results:
     input:
          bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(config)),
          multiqc_bam_raw='multiqc/bam_raw/multiqc.html',

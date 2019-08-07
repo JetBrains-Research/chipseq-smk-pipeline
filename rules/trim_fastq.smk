@@ -2,9 +2,9 @@ import os
 from pipeline_util import fastq_paths, trimmed_fastq_sample_names
 
 ruleorder: trim_paired_fastq > trim_single_fastq
-localrules: step2_trim_fastq_results, multiqc_trimmed_fastq
+localrules: all_trim_fastq_results, multiqc_trimmed_fastq
 
-rule step2_trim_fastq_results:
+rule all_trim_fastq_results:
     input:
         multiqc_fastq='multiqc/trimmed/multiqc.html'
 

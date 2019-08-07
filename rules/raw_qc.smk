@@ -1,9 +1,9 @@
 from pipeline_util import *
 
-localrules: step1_raw_qc_results, multiqc_fastq
+localrules: all_raw_qc_results, multiqc_fastq
 
 ####### Step: RAW Reads QC ##################
-rule step1_raw_qc_results:
+rule all_raw_qc_results:
     input:
          multiqc_fastq='multiqc/fastqc/multiqc.html',
 

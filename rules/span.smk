@@ -1,9 +1,9 @@
 from pipeline_util import *
 
-localrules: step9_span, step9_span_tuned, download_span
+localrules: all_span, all_span_tuned, download_span
 
 ######## Step: Peak Calling: SPAN ##################
-rule step9_span:
+rule all_span:
     input:
         span_peaks=expand('span/{sample}_{span_bin}_{span_fdr}_{span_gap}.peak',
             sample=fastq_aligned_names(config),
@@ -12,7 +12,7 @@ rule step9_span:
             span_gap=config['span_gap']
         ),
 
-rule step9_span_tuned:
+rule all_span_tuned:
     input:
         span_tuned_peaks=tuned_peaks_input_files(config)
 

@@ -4,6 +4,7 @@ from glob import glob
 
 from match_control import find_control_for
 
+
 def fastq_paths(config):
     fq_dir = config['fastq_dir']
     fq_ext = config['fastq_ext']
