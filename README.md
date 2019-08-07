@@ -43,7 +43,7 @@ Example of ATAC-Seq processing on qsub
 $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
     --config work_dir=<work_dir> fastq_dir=<fastq_dir> genome=<genome> \
     macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
-    span_params="--fragment 0" bin=100
+    span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
 ```
 
 P.S: Use `--config` to override default options from `./config.yaml` file

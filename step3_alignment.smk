@@ -69,7 +69,7 @@ rule bowtie2_align_paired:
         index=lambda wildcards, input: os.path.join(
             str(input.bowtie2_index_path), config['genome']
         ),
-        extra="-X 2000 --dovetail"
+        extra=config["bowtie2_params"]
     wrapper: "0.36.0/bio/bowtie2/align"
 
 # Aligned bams qc

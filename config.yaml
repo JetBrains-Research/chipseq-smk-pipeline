@@ -15,6 +15,10 @@ trim_reads: False
 # UCSC genome: e.g. hg19, hg38, mm9, mm10, ..
 genome: hg19
 
+# For ATAC-Seq used: "-X 2000 --dovetail"
+bowtie2_params: ""
+#bowtie2_params: "-X 2000 --dovetail"
+
 # ======================== MACS2 ========================
 # MACS2 Narrow:
 #macs2_mode: narrow
