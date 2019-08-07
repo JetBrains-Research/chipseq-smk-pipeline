@@ -4,28 +4,18 @@ from pipeline_util import fastq_paths, trimmed_fastq_sample_names
 ruleorder: trim_paired_fastq > trim_single_fastq
 localrules: step2_trim_fastq_results, multiqc_trimmed_fastq
 
-# def step1_trim_fastq_results_input_fun():
-#     if bool(config['trim_reads']):
-#         return dict(multiqc_fastq='multiqc/trimmed/multiqc.html')
-#     else:
-#         return {}
-
 rule step2_trim_fastq_results:
     input:
         multiqc_fastq='multiqc/trimmed/multiqc.html'
-
-
-
-# TODO: multiqc: rename for match original files (from trimgalore reports) with
-#  fastqc files
 
 rule trim_single_fastq:
     input: f"{config['fastq_dir']}/{{sample}}.{config['fastq_ext']}"
     output:
         "trimmed/{sample}_trimmed.fq.gz",
         f"trimmed/{{sample}}.{config['fastq_ext']}_trimming_report.txt"
-    threads: 4
     log: 'logs/trimmed/{sample}.log'
+
+    threads: 4
     resources:
         threads=4,
         mem=16, mem_ram=12,
@@ -56,8 +46,9 @@ rule trim_paired_fastq:
         fq1_rep = f"trimmed/{{sample}}_1.{config['fastq_ext']}_trimming_report.txt",
         fq2 = f"trimmed/{{sample}}_2_trimmed.fq.gz",
         fq2_rep = f"trimmed/{{sample}}_2.{config['fastq_ext']}_trimming_report.txt"
-    threads: 4
     log: 'logs/trimmed/{sample}.log'
+
+    threads: 4
     resources:
         threads=4,
         mem=16, mem_ram=12,

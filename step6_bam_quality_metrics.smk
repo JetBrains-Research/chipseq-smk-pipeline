@@ -11,17 +11,18 @@ rule step6_bam_quality_metrics_results:
 
 rule download_phantompeakqualtools:
     output: directory('bin/phantompeakqualtools')
+    log: 'logs/phantompeakqualtools.log'
 
     conda: "envs/phantom.env.yaml"
     params:
           targz='phantompeakqualtools.tar.gz'
     shell:
-        'cd bin; '
+        'cd bin &> {log} && '
         'curl --location '
         'https://storage.googleapis.com/google-code-archive-downloads/v2/'
         'code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz '
-        '--output {params.targz}; '
-        'tar xvf {params.targz}'
+        '--output {params.targz} &>> {log} && '
+        'tar xvf {params.targz} &>> {log}'
 
 rule install_spp:
     output: touch('flags/spp.installed')
@@ -52,12 +53,6 @@ rule bam_qc_phantom:
         # 'Rscript {params.run_spp} -c={input.bam} -savp -out={output.tsv} -rf'
         'Rscript --default-packages=utils,stats,grDevices,caTools,graphics {params.run_spp}'
         ' -c={input.bam} -savp -out={output.tsv} -odir=qc/phantom -rf'
-
-# rule bam_to_pileup:
-#     input: 'bams/{sample}.bam'
-#     output: temp('bams/pileup/{sample}.bed')
-#     conda: 'envs/bio.env.yaml'
-#     shell: 'bedtools bamtobed -i {input} > {output}'
 
 rule bam_qc_pbc_nrf:
     input: 'bams/pileup/{sample}.bed'

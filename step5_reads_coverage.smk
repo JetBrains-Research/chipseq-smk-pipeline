@@ -10,6 +10,7 @@ rule step5_reads_coverage_results:
 rule index_bams:
     input: '{anywhere}/{sample}.bam'
     output: '{anywhere}/{sample}.bam.bai'
+    log: 'logs/{anywhere}/{sample}.bam.bai.log'
     wrapper: '0.36.0/bio/samtools/index'
 
 rule bam2bw:
