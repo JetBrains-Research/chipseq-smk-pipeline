@@ -21,8 +21,8 @@ rule download_phantompeakqualtools:
         'curl --location '
         'https://storage.googleapis.com/google-code-archive-downloads/v2/'
         'code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz '
-        '--output {params.targz} &>> {log} && '
-        'tar xvf {params.targz} &>> {log}'
+        '--output {params.targz} &>> ../{log} && '
+        'tar xvf {params.targz} &>> ../{log}'
 
 rule install_spp:
     output: touch('flags/spp.installed')
