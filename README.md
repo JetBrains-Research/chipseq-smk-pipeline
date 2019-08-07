@@ -26,6 +26,8 @@ Run the pipeline:
 $ snakemake all [--cores <cores>] --use-conda --config work_dir=<work_dir> genome=<genome> fastq_dir=<fastq_dir>
 ```
 
+P.S: Use `--config` to override default options from `./config.yaml` file
+
 QSUB
 ----
 
@@ -43,6 +45,8 @@ $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.
     macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
     span_params="--fragment 0" bin=100
 ```
+
+P.S: Use `--config` to override default options from `./config.yaml` file
 
 Pipeline Description
 -----
