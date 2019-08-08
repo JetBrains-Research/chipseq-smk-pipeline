@@ -6,7 +6,6 @@ localrules: all_filter_aligned_reads_results, bam_filtered_multiqc
 rule all_filter_aligned_reads_results:
     input:
          bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(config)),
-         multiqc_bam_raw='multiqc/bam_raw/multiqc.html',
          multiqc_bam='multiqc/bam_filtered/multiqc.html',
          deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names(config)),
 
@@ -14,7 +13,7 @@ rule all_filter_aligned_reads_results:
 rule filter_sort_bam_single:
     input: '{anywhere}/{sample}.bam.raw'
     output: '{anywhere}/{sample}.bam'
-    log: 'logs/bams_filter/{anywhere}/{sample}.log'
+    log: 'logs/bam_filtered/{anywhere}/{sample}.log'
 
     conda: '../envs/bio.env.yaml'
     shell:
@@ -25,19 +24,19 @@ rule filter_sort_bam_single:
 # Filtered reads qc
 rule bam_filtered_stats:
     input: 'bams/{sample}.bam'
-    output: 'qc/bams_filtered_samtools_stats/{sample}.txt'
-    log: 'logs/bams_filtered_samtools_stats/{sample}.log'
+    output: 'qc/bam_filtered/samtools_stats/{sample}.txt'
+    log: 'logs/bam_filtered/samtools_stats/{sample}.log'
 
     wrapper: '0.36.0/bio/samtools/stats'
 
 rule bam_filtered_multiqc:
     input:
         expand(
-            'qc/bams_filtered_samtools_stats/{sample}.txt',
+            'qc/bam_filtered/samtools_stats/{sample}.txt',
             sample=fastq_aligned_names(config)
         )
     output: 'multiqc/bam_filtered/multiqc.html'
-    log: 'multiqc/bams_filtered/multiqc.log'
+    log: 'multiqc/bam_filtered/multiqc.log'
 
     wrapper: '0.36.0/bio/multiqc'
 
@@ -47,7 +46,7 @@ rule bam_deduplication:
     output:
           bam="deduplicated/{sample}.bam",
           metrics="qc/picard/{sample}.txt"
-    log: "logs/bams_deduplicated/{sample}.log"
+    log: "logs/bam_deduplicated/{sample}.log"
 
     threads: 4
     resources:

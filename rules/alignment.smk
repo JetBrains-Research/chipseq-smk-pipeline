@@ -8,7 +8,6 @@ rule all_alignment_results:
     input:
          bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(config)),
          multiqc_bam_raw='multiqc/bam_raw/multiqc.html',
-         multiqc_bam='multiqc/bam_filtered/multiqc.html',
 
 # Indexes:
 rule download_chrom_sizes:
@@ -29,7 +28,7 @@ rule download_fa:
 rule bowtie2_index:
     input: 'fa'
     output: directory('bowtie2-index')
-    log: 'logs/bowtie2/bowtie2-index.log'
+    log: 'logs/bam_raw/bowtie2/bowtie2-index.log'
 
     conda: '../envs/bio.env.yaml'
     params:
@@ -43,7 +42,7 @@ rule bowtie2_align_single:
         sample=bowtie2_input_paths(config, False),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
-    log: "logs/bowtie2/{sample}.log"
+    log: "logs/bam_raw/bowtie2/{sample}.log"
 
     threads: 4
     resources:
@@ -62,7 +61,7 @@ rule bowtie2_align_paired:
         sample=bowtie2_input_paths(config, True),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
-    log: "logs/bowtie2/{sample}.log"
+    log: "logs/bam_raw/bowtie2/{sample}.log"
 
     threads: 4
     resources:
@@ -80,18 +79,18 @@ rule bowtie2_align_paired:
 # Aligned bams qc
 rule bam_raw_stats:
     input: 'bams/{sample}.bam.raw'
-    output: 'qc/bam_raw_samtools_stats/{sample}.txt'
-    log: 'logs/bam_raw_samtools_stats/{sample}.log'
+    output: 'qc/bam_raw/samtools_stats/{sample}.txt'
+    log: 'logs/bam_raw/samtools_stats/{sample}.log'
     wrapper: '0.36.0/bio/samtools/stats'
 
 rule bam_raw_multiqc:
     input:
         expand(
-            'logs/bowtie2/{sample}.log',
+            'logs/bam_raw/bowtie2/{sample}.log',
             sample=fastq_aligned_names(config)
         ),
         expand(
-            'qc/bam_raw_samtools_stats/{sample}.txt',
+            'qc/bam_raw/samtools_stats/{sample}.txt',
             sample=fastq_aligned_names(config)
         )
     output: 'multiqc/bam_raw/multiqc.html'
