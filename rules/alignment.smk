@@ -11,8 +11,8 @@ rule all_alignment_results:
 
 # Indexes:
 rule download_chrom_sizes:
-    output: '{}.chrom.sizes'.format(config['genome'])
-    log: 'logs/{}.chrom.sizes.log'.format(config['genome'])
+    output: f"{config['genome']}.chrom.sizes"
+    log: f"logs/{config['genome']}.chrom.sizes.log"
 
     shell:
         'wget -O {output} http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes &> {log}'
