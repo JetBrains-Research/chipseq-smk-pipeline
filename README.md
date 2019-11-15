@@ -1,5 +1,6 @@
 # chipseq-smk-pipeline
-Technical ChIP-Seq snakelike pipeline - snakemake version of https://github.com/JetBrains-Research/washu
+ChIP-Seq processing pipeline - [snakemake](https://snakemake.readthedocs.io/en/stable/) version of [washu](https://github.com/JetBrains-Research/washu) pipeline.\
+Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin for [PyCharm](https://www.jetbrains.com/pycharm/) IDE.
 
 Configuration 
 -------------
@@ -66,3 +67,10 @@ Reads folder is a relative path in pipeline working directory and defined by `fa
 | `./multiqc` | MultiQC reports for different steps |
 | `./qc` | QC Reports |
 | `./logs` | Shell commands logs |
+
+Useful links
+------------
+* [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
+* [PyCharm](https://www.jetbrains.com/pycharm/) IDE
+* [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system
+* JetBrains Research BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
