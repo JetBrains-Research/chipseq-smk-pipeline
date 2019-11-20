@@ -10,7 +10,7 @@ rule all_span:
             span_bin=config['span_bin'],
             span_fdr=config['span_fdr'],
             span_gap=config['span_gap']
-        ),
+        )
 
 rule all_span_tuned:
     input:
@@ -40,9 +40,8 @@ def span_input_fun(wildcards):
 rule call_peaks_span:
     input: unpack(span_input_fun)
     output:
-        peaks=f'span/{{sample}}_{{bin}}_{config["span_fdr"]}_{config["span_gap"]}.peak',
-        model='span/fit/{sample}_{bin}.span'
-    log: f'logs/span/{{sample}}_{{bin}}{config["span_fdr"]}_{config["span_gap"]}.log'
+        peaks=f'span/{{sample}}_{{bin}}_{config["span_fdr"]}_{config["span_gap"]}.peak'
+    log: f'logs/span/{{sample}}_{{bin}}_{config["span_fdr"]}_{config["span_gap"]}.log'
 
     conda: '../envs/java8.env.yaml'
     threads: 4
@@ -50,16 +49,15 @@ rule call_peaks_span:
         fdr = config["span_fdr"],
         gap = config["span_gap"],
         span_params=config['span_params'],
-        control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control',
-            None) else ""
+        control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
-        'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {'
-        'input.chrom_sizes} '
-        '--peaks {output.peaks} --model {output.model} --workdir span --threads {threads} '
+        'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
+        '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
+        '--workdir span --threads {threads} '
         '--bin {wildcards.bin} --fdr {params.fdr} --gap {params.gap} {params.span_params} &> {log}'
 
 
@@ -70,12 +68,9 @@ def span_tuned_input_fun(wildcards):
     )
 
     sample = wildcards.sample
-    bin = wildcards.bin
-
     anns_file = find_labels_for_sample(sample, config)
     assert anns_file, f"Peaks annotations file is missing for {sample}"
     args['span_markup'] = anns_file
-    args['model'] = f'span/fit/{sample}_{bin}.span'
     return args
 
 rule call_peaks_span_tuned:
@@ -91,5 +86,5 @@ rule call_peaks_span_tuned:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
-        'java -Xmx8G -jar bin/span-0.11.0.jar analyze --model {input.model} '
+        'java -Xmx8G -jar {input.span} analyze --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
         '--workdir span --threads {threads}  --labels {input.span_markup} --peaks {output} &> {log}'
