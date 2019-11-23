@@ -1,8 +1,45 @@
 from pipeline_util import *
 
-configfile: "config.yaml"
-workdir: config['work_dir']
+if "pipeline_src_path" in config:
+    PIPELINE_SRC_PATH=os.path.abspath(config["pipeline_src_path"])
+else:
+    PIPELINE_SRC_PATH=os.getcwd()
 
+# use this file as a basic config file in your working directory
+# if you'd like to customise it: fix it directly or override required args
+# using --config options or from --configfile file.
+configfile: "config.yaml"
+
+onstart:
+    print(f"Working directory: {os.getcwd()}")
+    print(f"Pipeline path: {PIPELINE_SRC_PATH}")
+    print(f"Environment: TMPDIR={os.environ.get('TMPDIR', '<n/a>')}")
+    print(f"Environment: PATH={os.environ.get('PATH', '<n/a>')} ")
+    print(f"Config: ", *[f'{k}: {v}' for k, v in config.items()], sep = "\n  ")
+    print("TOOLS: ")
+    os.system('echo "  bash: $(which bash)"')
+    os.system('echo "  PYTHON: $(which python)"')
+    os.system('echo "  CONDA: $(which conda)"')
+    os.system('echo "  SNAKEMAKE: $(which snakemake)"')
+    os.system('echo "  PYTHON VERSION: $(python --version)"')
+    os.system('echo "  CONDA VERSION: $(conda --version)"')
+    os.system('')
+
+    # check shell (cond not work properly due to shell detection issues
+    print("Snakemake shell check")
+    shell('echo "  SNAKEMAKE VERSION: $(snakemake --version)"')
+
+    print("FastQ Reads:", config['fastq_dir'])
+
+    #---------------------------------------------------------------------
+    # Let's create symlinks for several pipleine source dirs to simplify
+    # further paths in pipeline
+    for pipeline_dir in ['scripts', 'envs', 'schemas']:
+        if not os.path.exists(pipeline_dir):
+            target_dir = os.path.join(PIPELINE_SRC_PATH, pipeline_dir)
+            if os.path.exists(target_dir):
+                print(f"Linking '{pipeline_dir}' directory:")
+                shell(f"ln -s {target_dir} {pipeline_dir}")
 
 include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"

@@ -1,5 +1,3 @@
-work_dir: /home/osboxes/chipseq/workdir
-
 # ======================== FASTQ READS ========================
 
 fastq_dir: reads

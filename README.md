@@ -24,7 +24,7 @@ Launch
 
 Run the pipeline:
 ```bash
-$ snakemake all [--cores <cores>] --use-conda --config work_dir=<work_dir> genome=<genome> fastq_dir=<fastq_dir>
+$ snakemake all [--cores <cores>] --use-conda --directory <work_dir> --config pipeline_src_path=<pipeline_src_dir> genome=<genome> fastq_dir=<fastq_dir>
 ```
 
 P.S: Use `--config` to override default options from `./config.yaml` file
@@ -42,7 +42,8 @@ $ cookiecutter https://github.com/iromeo/generic.git
 Example of ATAC-Seq processing on qsub
 ```bash
 $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
-    --config work_dir=<work_dir> fastq_dir=<fastq_dir> genome=<genome> \
+    --directory <work_dir> \
+    --config pipeline_src_path=<pipeline_src_dir> fastq_dir=<fastq_dir> genome=<genome> \
     macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
     span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
 ```
