@@ -16,15 +16,14 @@ def sicer_all_peaks_input():
     # XXX: change significance only via config, SICER rule takes the value from
     # config, not via wildcards
 
-    sample_2_config_dict = sample_2_control(config)
-    for sample in fastq_aligned_names(config):
-        if sample_2_config_dict[sample] is None:
+    for sample in fastq_aligned_names(FASTQ_PATHS):
+        if SAMPLE_2_CONTROL_MAP[sample] is None:
             # w/o control
-            significance=config['sicer_evalue']
+            significance = config['sicer_evalue']
             files.append(f'sicer/{sample}-W{window_size}-G{gap}-E{significance}.scoreisland')
         else:
             # with control
-            significance=config['sicer_fdr']
+            significance = config['sicer_fdr']
             files.append(f'sicer/{sample}-W{window_size}-G{gap}-islands-summary-FDR{significance}')
 
     return files
@@ -58,7 +57,7 @@ def sicer_input_fun(wildcards):
     sample = wildcards.sample
 
     control_args = {}
-    control_sample = sample_2_control(config)[sample]
+    control_sample = SAMPLE_2_CONTROL_MAP[sample]
     if control_sample:
         control_args['control_pileup'] = f'bams/pileup/{control_sample}.bed'
 

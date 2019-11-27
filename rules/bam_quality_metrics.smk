@@ -5,8 +5,8 @@ localrules: all_bam_quality_metrics_results
 ######## Step: BAMS QC Metrics ##################
 rule all_bam_quality_metrics_results:
     input:
-        bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names(config)),
-        bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names(config)),
+        bam_qc_phantom=expand('qc/phantom/{sample}.phantom.tsv', sample=fastq_aligned_names(FASTQ_PATHS)),
+        bam_qc_pbc=expand('qc/pbc_nrf/{sample}.pbc_nrf.tsv', sample=fastq_aligned_names(FASTQ_PATHS)),
 
 
 rule download_phantompeakqualtools:

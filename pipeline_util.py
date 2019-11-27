@@ -5,26 +5,24 @@ from glob import glob
 from match_control import find_control_for
 
 
-def fastq_paths(config):
+def _fastq_paths(config):
     fq_dir = config['fastq_dir']
     fq_ext = config['fastq_ext']
     return list(glob(os.path.join(fq_dir, '*.' + fq_ext)))
 
 
-def fastq_names_wo_ext(config):
+def fastq_names_wo_ext(fastq_paths):
     # file name w/o ext and parent folders: supports *.fastq and *.fastq.gz
-    return [_split_to_fname_and_ext(f)[0] for f in fastq_paths(config)]
+    return [_split_to_fname_and_ext(f)[0] for f in fastq_paths]
 
 
-def fastq_aligned_names(config):
-    return _paired_fastq_samples_names(config) + _single_fastq_samples_names(config)
+def fastq_aligned_names(fastq_paths):
+    return _paired_fastq_samples_names(fastq_paths) + _single_fastq_samples_names(fastq_paths)
 
 
-def sample_2_control(config):
-    fq_files = fastq_paths(config)
-
+def _sample_2_control(fastq_paths):
     result = {}
-    for fq_path in fq_files:
+    for fq_path in fastq_paths:
         ext = _split_to_fname_and_ext(fq_path)[1]
         control_path = find_control_for(fq_path, ext)
 
@@ -68,14 +66,14 @@ def _split_to_fname_and_ext(path):
         return name, dot_ext[1:]
 
 
-def _single_fastq_samples_names(config):
-    paired_samples = _paired_fastq_samples_names(config)
-    return [name for name in fastq_names_wo_ext(config)
+def _single_fastq_samples_names(fastq_paths):
+    paired_samples = _paired_fastq_samples_names(fastq_paths)
+    return [name for name in fastq_names_wo_ext(fastq_paths)
             if name[-2:] not in ['_1', '_2'] or name[:-2] not in paired_samples]
 
 
-def _paired_fastq_samples_names(config):
-    fq_names = set(fastq_names_wo_ext(config))
+def _paired_fastq_samples_names(fastq_paths):
+    fq_names = set(fastq_names_wo_ext(fastq_paths))
     paired_samples = [name[:-2] for name in fq_names if name[-2:] == '_1']
     return [sample for sample in paired_samples if sample + '_2' in fq_names]
 
@@ -84,9 +82,9 @@ def is_trimmed(config):
     return bool(config['trim_reads'])
 
 
-def trimmed_fastq_sample_names(config):
+def trimmed_fastq_sample_names(fastq_paths):
     # here `name` could have _1 and _2 suffix in case of paired reads
-    return [f"{name}_trimmed" for name in fastq_names_wo_ext(config)]
+    return [f"{name}_trimmed" for name in fastq_names_wo_ext(fastq_paths)]
 
 
 def effective_genome_fraction(genome, chrom_sizes_path, pileup_bed):
@@ -135,11 +133,11 @@ def macs_species(genome):
     raise Exception('Unknown species {}'.format(genome))
 
 
-def tuned_peaks_input_files(config):
+def tuned_peaks_input_files(config, fastq_paths):
     span_bin = config['span_bin']
 
     tuned_peaks = []
-    for sample in fastq_aligned_names(config):
+    for sample in fastq_aligned_names(fastq_paths):
         labels_file = find_labels_for_sample(sample, config)
         if labels_file:
             tuned_peaks.append(f'span/{sample}_{span_bin}_tuned.peak')

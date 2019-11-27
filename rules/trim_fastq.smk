@@ -1,5 +1,5 @@
 import os
-from pipeline_util import fastq_paths, trimmed_fastq_sample_names
+from pipeline_util import trimmed_fastq_sample_names
 
 ruleorder: trim_paired_fastq > trim_single_fastq
 localrules: all_trim_fastq_results, multiqc_trimmed_fastq
@@ -88,7 +88,7 @@ rule multiqc_trimmed_fastq:
         ),
         expand(
             'trimmed/{fastq_file}_trimming_report.txt',
-            fastq_file=[os.path.basename(p) for p in fastq_paths(config)]
+            fastq_file=[os.path.basename(p) for p in FASTQ_PATHS]
         ),
 
     output: 'multiqc/trimmed/multiqc.html'

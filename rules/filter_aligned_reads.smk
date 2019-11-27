@@ -5,9 +5,9 @@ localrules: all_filter_aligned_reads_results, bam_filtered_multiqc
 ######## Step: Alignment QC ##################
 rule all_filter_aligned_reads_results:
     input:
-         bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(config)),
+         bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(FASTQ_PATHS)),
          multiqc_bam='multiqc/bam_filtered/multiqc.html',
-         deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names(config)),
+         deduplicated=expand('deduplicated/{sample}.bam', sample=fastq_aligned_names(FASTQ_PATHS)),
 
 # Filter aligned reads with good mapping score: (remove not aligned and bad mapped)
 rule filter_sort_bam_single:
@@ -33,7 +33,7 @@ rule bam_filtered_multiqc:
     input:
         expand(
             'qc/bam_filtered/samtools_stats/{sample}.txt',
-            sample=fastq_aligned_names(config)
+            sample=fastq_aligned_names(FASTQ_PATHS)
         )
     output: 'multiqc/bam_filtered/multiqc.html'
     log: 'multiqc/bam_filtered/multiqc.log'

@@ -6,17 +6,15 @@ localrules: all_macs2_results
 rule all_macs2_results:
     input:
         macs2_peaks=expand(
-            'macs2/{sample}_{macs2_suffix}_peaks.{macs2_mode}Peak',
-            sample=fastq_aligned_names(config),
-            macs2_mode=config['macs2_mode'],
-            macs2_suffix=config['macs2_suffix'],
+            f'macs2/{{sample}}_{config["macs2_suffix"]}_peaks.{config["macs2_mode"]}Peak',
+            sample=fastq_aligned_names(FASTQ_PATHS)
         )
 
 def macs2_input_fun(wildcards):
     sample = wildcards.sample
 
     control_args = {}
-    control_sample = sample_2_control(config)[sample]
+    control_sample = SAMPLE_2_CONTROL_MAP[sample]
     if control_sample:
         control_args['control'] = f'bams/{control_sample}.bam'
 
