@@ -1,3 +1,5 @@
+[![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+
 # chipseq-smk-pipeline
 ChIP-Seq processing pipeline - [snakemake](https://snakemake.readthedocs.io/en/stable/) version of [washu](https://github.com/JetBrains-Research/washu) pipeline.\
 Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin for [PyCharm](https://www.jetbrains.com/pycharm/) IDE.
