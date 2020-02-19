@@ -1,11 +1,6 @@
 from pipeline_util import *
 from pipeline_util import _fastq_paths, _sample_2_control
 
-if "pipeline_src_path" in config:
-    PIPELINE_SRC_PATH=os.path.abspath(config["pipeline_src_path"])
-else:
-    PIPELINE_SRC_PATH=os.getcwd()
-
 # use this file as a basic config file in your working directory
 # if you'd like to customise it: fix it directly or override required args
 # using --config options or from --configfile file.
@@ -16,7 +11,7 @@ SAMPLE_2_CONTROL_MAP = _sample_2_control(FASTQ_PATHS)
 
 onstart:
     print(f"Working directory: {os.getcwd()}")
-    print(f"Pipeline path: {PIPELINE_SRC_PATH}")
+    print(f"Snakefile directory: {workflow.basedir}")
     print(f"Environment: TMPDIR={os.environ.get('TMPDIR', '<n/a>')}")
     print(f"Environment: PATH={os.environ.get('PATH', '<n/a>')} ")
     print(f"Config: ", *[f'{k}: {v}' for k, v in config.items()], sep = "\n  ")
@@ -40,10 +35,10 @@ onstart:
     # further paths in pipeline
     for pipeline_dir in ['scripts', 'envs', 'schemas']:
         if not os.path.exists(pipeline_dir):
-            target_dir = os.path.join(PIPELINE_SRC_PATH, pipeline_dir)
-            if os.path.exists(target_dir):
+            src_dir = os.path.join(workflow.basedir , pipeline_dir)
+            if os.path.exists(src_dir):
                 print(f"Linking '{pipeline_dir}' directory:")
-                shell(f"ln -s {target_dir} {pipeline_dir}")
+                shell(f"ln -sf {src_dir} {pipeline_dir}")
 
 include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"

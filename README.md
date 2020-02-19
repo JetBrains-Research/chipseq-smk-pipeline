@@ -26,7 +26,7 @@ Launch
 
 Run the pipeline:
 ```bash
-$ snakemake all [--cores <cores>] --use-conda --directory <work_dir> --config pipeline_src_path=<pipeline_src_dir> genome=<genome> fastq_dir=<fastq_dir>
+$ snakemake all [--cores <cores>] --use-conda --directory <work_dir> --config genome=<genome> fastq_dir=<fastq_dir>
 ```
 
 P.S: Use `--config` to override default options from `./config.yaml` file
@@ -45,7 +45,7 @@ Example of ATAC-Seq processing on qsub
 ```bash
 $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
     --directory <work_dir> \
-    --config pipeline_src_path=<pipeline_src_dir> fastq_dir=<fastq_dir> genome=<genome> \
+    --config fastq_dir=<fastq_dir> genome=<genome> \
     macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
     span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
 ```
@@ -55,7 +55,8 @@ P.S: Use `--config` to override default options from `./config.yaml` file
 Pipeline Description
 -----
 Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`. 
-Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property. FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
+Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property. 
+FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
 
 
 | Folder | Description |
