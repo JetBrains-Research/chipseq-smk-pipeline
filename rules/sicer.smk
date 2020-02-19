@@ -43,7 +43,7 @@ rule bam_to_pileup:
 rule pileup_bed_effective_genome_fraction:
     input:
         pileup_bed=rules.bam_to_pileup.output,
-        chrom_sizes=rules.download_chrom_sizes.output
+        chrom_sizes=rules.download_chrm_sizes.output
     output:
         temp(str(rules.bam_to_pileup.output) + ".egf")
     run:
@@ -102,8 +102,7 @@ rule call_peaks_sicer:
         #       ["window size (bp)"] ["fragment size"] ["effective genome fraction"]
         #       ["gap size (bp)"] ["E-value"]
         'echo "Significance threshold: {params.significance}" > {log} &&'
-        ' mkdir -p tmp_sicer &&'
-        ' cd tmp_sicer && '
+        ' tmp_sicer=$(mktemp -d -p $(pwd) -t sicer-XXXXXXXXXX) && mkdir -p $tmp_sicer && cd $tmp_sicer && '
         '  {params.script} ../{params.pileups_dir} {params.signal_pileup_bed_fname} {params.control_arg}'
         '    $(pwd) {params.genome} 1 {wildcards.width}'
         '    {params.fragment} $(cat "../{input.effective_genome_fraction}")'
