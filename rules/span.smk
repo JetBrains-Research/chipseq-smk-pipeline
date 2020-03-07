@@ -37,14 +37,11 @@ def span_input_fun(wildcards):
 rule call_peaks_span:
     input: unpack(span_input_fun)
     output:
-        peaks=f'span/{{sample}}_{{bin}}_{config["span_fdr"]}_{config["span_gap"]}.peak'
-    log: f'logs/span/{{sample}}_{{bin}}_{config["span_fdr"]}_{config["span_gap"]}.log'
-
+        peaks=f'span/{{name}}_{{bin}}_{{fdr}}_{{gap}}.peak'
+    log: f'logs/span/{{name}}_{{bin}}_{{fdr}}_{{gap}}.log'
     conda: '../envs/java8.env.yaml'
     threads: 4
     params:
-        fdr = config["span_fdr"],
-        gap = config["span_gap"],
         span_params=config['span_params'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
@@ -55,7 +52,7 @@ rule call_peaks_span:
         'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
         '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
         '--workdir span --threads {threads} '
-        '--bin {wildcards.bin} --fdr {params.fdr} --gap {params.gap} {params.span_params} &> {log}'
+        '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
 
 
 def span_tuned_input_fun(config):
