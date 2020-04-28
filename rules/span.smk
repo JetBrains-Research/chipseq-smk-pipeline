@@ -14,7 +14,7 @@ rule all_span_tuned:
         span_tuned_peaks=tuned_peaks_input_files(config, FASTQ_PATHS)
 
 rule download_span:
-    output: 'bin/span-0.11.0.jar'
+    output: 'bin/span-0.12.0.5096.jar'
     shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-0.12.0.5096.jar'
 
 
