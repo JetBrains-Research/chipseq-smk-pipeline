@@ -43,7 +43,7 @@ rule bam_to_pileup:
 rule pileup_bed_effective_genome_fraction:
     input:
         pileup_bed=rules.bam_to_pileup.output,
-        chrom_sizes=rules.download_chrm_sizes.output
+        chrom_sizes=rules.download_chrom_sizes.output
     output:
         temp(str(rules.bam_to_pileup.output) + ".egf")
     run:
