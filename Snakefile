@@ -4,7 +4,7 @@ from pipeline_util import _fastq_paths, _sample_2_control
 # use this file as a basic config file in your working directory
 # if you'd like to customise it: fix it directly or override required args
 # using --config options or from --configfile file.
-configfile: "config.yaml"
+configfile: f"{workflow.basedir}/config.yaml"
 
 FASTQ_PATHS = _fastq_paths(config)
 SAMPLE_2_CONTROL_MAP = _sample_2_control(FASTQ_PATHS)
