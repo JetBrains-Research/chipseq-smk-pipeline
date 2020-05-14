@@ -16,6 +16,11 @@ rule filter_sort_bam_single:
     log: 'logs/bam_filtered/{anywhere}/{sample}.log'
 
     conda: '../envs/bio.env.yaml'
+    threads: 4
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 120
     shell:
         'samtools view -bh -q30 {input} > {output}.filtered 2> {log} &&'
         ' samtools sort {output}.filtered -o {output}  &> {log} &&'
