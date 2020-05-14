@@ -31,6 +31,11 @@ rule bowtie2_index:
     log: 'logs/bam_raw/bowtie2/bowtie2-index.log'
 
     conda: '../envs/bio.env.yaml'
+    threads: 4
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 120
     params:
         files_list=lambda wildcards: ','.join(glob('fa/*.fa.gz')),
         target='bowtie2-index/{genome}'.format(genome=config['genome'])
