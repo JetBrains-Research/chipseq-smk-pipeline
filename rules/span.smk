@@ -43,6 +43,7 @@ rule call_peaks_span:
     threads: 4
     params:
         span_params=config['span_params'],
+        span_iterations=config['span_iteration'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
         threads = 4,
@@ -51,7 +52,7 @@ rule call_peaks_span:
     shell:
          'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
          '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir span --threads {threads} '
+         '--workdir span --iterations {params.span_iterations} --threads {threads} '
          '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
 
 
@@ -67,6 +68,7 @@ def span_tuned_input_fun(config):
         anns_file = find_labels_for_sample(sample, config)
         assert anns_file, f"Peaks annotations file is missing for {sample}"
         args['span_markup'] = anns_file
+        args['span_iterations'] = config['span_iterations']
         return args
     return inner
 
@@ -84,4 +86,5 @@ rule call_peaks_span_tuned:
         time = 60 * 120
     shell:
          'java -Xmx8G -jar {input.span} analyze --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir span --threads {threads}  --labels {input.span_markup} --peaks {output} &> {log}'
+         '--workdir span --iterations {input.span_iterations} --threads {threads} '
+         '--labels {input.span_markup} --peaks {output} &> {log}'

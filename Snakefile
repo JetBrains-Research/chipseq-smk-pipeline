@@ -31,7 +31,7 @@ onstart:
     print("FastQ Reads:", config['fastq_dir'])
 
     #---------------------------------------------------------------------
-    # Let's create symlinks for several pipleine source dirs to simplify
+    # Let's create symlinks for several pipeline source dirs to simplify
     # further paths in pipeline
     for pipeline_dir in ['scripts', 'envs', 'schemas']:
         if not os.path.exists(pipeline_dir):

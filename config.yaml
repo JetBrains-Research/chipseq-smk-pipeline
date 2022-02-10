@@ -44,8 +44,9 @@ sicer_evalue: 100
 
 # ======================== SPAN ========================
 span_bin: 200
-span_gap: 5
-span_fdr: 1E-6
+span_gap: 3
+span_fdr: 0.05
+span_iterations: 50
 span_params: ""
 span_labels_dir: /home/osboxes/chipseq/tracks/peaks_annotations/
 span_markup: ""
