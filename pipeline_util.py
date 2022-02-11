@@ -6,9 +6,7 @@ from match_control import find_control_for
 
 
 def _fastq_paths(config):
-    fq_dir = config['fastq_dir']
-    fq_ext = config['fastq_ext']
-    return list(glob(os.path.join(fq_dir, '*.' + fq_ext)))
+    return list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext'])))
 
 
 def fastq_names_wo_ext(fastq_paths):
@@ -38,21 +36,9 @@ def _sample_2_control(fastq_paths):
     return result
 
 
-def _sample_by_fastq_file(fq_path):
-    name = _split_to_fname_and_ext(fq_path)[0]
-
-    if name[-2:] in ['_1', '_2']:
-        # paired file
-        return name[:-2]
-    else:
-        # single end file
-        return name
-
-
 def _split_to_fname_and_ext(path):
     # assumes file has valid ext
     # understands *.{ext} and *.{ext}.gz
-
     fname = os.path.basename(path)
 
     name, dot_ext = os.path.splitext(fname)
@@ -66,16 +52,45 @@ def _split_to_fname_and_ext(path):
         return name, dot_ext[1:]
 
 
+def _sample_by_fastq_file(fq_path):
+    name = _split_to_fname_and_ext(fq_path)[0]
+    if re.match('.*_R?[12]_?$', name):
+        # paired file
+        return re.sub('_R?[12]_?$', '', name)
+    else:
+        # single end file
+        return name
+
+
 def _single_fastq_samples_names(fastq_paths):
     paired_samples = _paired_fastq_samples_names(fastq_paths)
     return [name for name in fastq_names_wo_ext(fastq_paths)
-            if name[-2:] not in ['_1', '_2'] or name[:-2] not in paired_samples]
+            if not re.match('.*_R?[12]_?$', name) or re.sub('_R?[12]_?$', '', name) not in paired_samples]
 
 
 def _paired_fastq_samples_names(fastq_paths):
     fq_names = set(fastq_names_wo_ext(fastq_paths))
-    paired_samples = [name[:-2] for name in fq_names if name[-2:] == '_1']
-    return [sample for sample in paired_samples if sample + '_2' in fq_names]
+    result = []
+    for name in fq_names:
+        if re.match('.*_R?[12]_?$', name):
+            sample = re.sub('_R?[12]_?$', '', name)
+            suffix = name.replace(sample, '').replace('1', '2')
+            if f'{sample}{suffix}' in fq_names:
+                result.append(sample)
+    return result
+
+
+def _get_paired_suffixes(config):
+    # we assume that all the files share similar naming
+    suffix1, suffix2 = '_1', '_2'
+    for f in list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext']))):
+        name = _split_to_fname_and_ext(f)[0]
+        if re.match('.*_R?[12]_?$', name):
+            sample = re.sub('_R?[12]_?$', '', name)
+            suffix1 = name.replace(sample, '')
+            suffix2 = suffix1.replace('1', '2')
+            break
+    return suffix1, suffix2
 
 
 def is_trimmed(config):
@@ -173,19 +188,21 @@ def labels2files(config):
 def bowtie2_input_paths(config, paired):
     if is_trimmed(config):
         if paired:
+            suffix1, suffix2 = _get_paired_suffixes(config)
             return [
-                "trimmed/{sample}_1_trimmed.fq.gz",
-                "trimmed/{sample}_2_trimmed.fq.gz"
+                f"trimmed/{{sample}}{suffix1}_trimmed.{config['fastq_ext']}",
+                f"trimmed/{{sample}}{suffix2}_trimmed.{config['fastq_ext']}"
             ]
         else:
             return [
-                "trimmed/{sample}_trimmed.fq.gz",
+                f"trimmed/{{sample}}_trimmed.{config['fastq_ext']}",
             ]
     else:
         if paired:
+            suffix1, suffix2 = _get_paired_suffixes(config)
             return [
-                config['fastq_dir'] + f"/{{sample}}_1.{config['fastq_ext']}",
-                config['fastq_dir'] + f"/{{sample}}_2.{config['fastq_ext']}",
+                config['fastq_dir'] + f"/{{sample}}{suffix1}.{config['fastq_ext']}",
+                config['fastq_dir'] + f"/{{sample}}{suffix2}.{config['fastq_ext']}",
             ]
         else:
             return [

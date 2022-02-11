@@ -1,12 +1,10 @@
 # ======================== FASTQ READS ========================
-
 fastq_dir: reads
 
 # FASTQ file extension: "fastq.gz" or "fastq" or "fq.gz" or "fq", etc.
 fastq_ext: "fastq.gz"
 
 # ======================== TRIM READS ========================
-#trim_reads: True
 trim_reads: False
 
 # ======================== Alignment ========================
@@ -18,6 +16,7 @@ bowtie2_params: ""
 #bowtie2_params: "-X 2000 --dovetail"
 
 # ======================== MACS2 ========================
+macs2: True
 # MACS2 Narrow:
 #macs2_mode: narrow
 #macs2_params: "-q 0.05"
@@ -36,6 +35,7 @@ macs2_suffix: broad0.1 # do not use underscores here otherwise wrong sample wild
 #macs2_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
 
 # ======================== SICER ========================
+sicer: False
 sicer_fragment: 150
 sicer_window: 200
 sicer_gap: 600
@@ -43,10 +43,11 @@ sicer_fdr: 0.01
 sicer_evalue: 100
 
 # ======================== SPAN ========================
+span: False
 span_bin: 200
 span_gap: 3
 span_fdr: 0.05
 span_iterations: 50
 span_params: ""
-span_labels_dir: /home/osboxes/chipseq/tracks/peaks_annotations/
+span_labels_dir: /peaks_annotations/
 span_markup: ""
