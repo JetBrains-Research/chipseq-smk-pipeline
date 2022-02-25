@@ -64,7 +64,7 @@ rule all:
         rules.all_raw_qc_results.input,
 
         # Optional reads trimming, this option is controlled by setting: config[trim_reads]
-        *([] if not is_trimmed(config) else rules.all_trim_fastq_results.input),
+        *([] if not bool(config['trim_reads']) else rules.all_trim_fastq_results.input),
 
         # Alignment
         rules.all_alignment_results.input,

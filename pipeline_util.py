@@ -2,8 +2,10 @@ import os
 import re
 from glob import glob
 
-from match_control import find_control_for
 
+####################
+# Fastq processing #
+####################
 
 def _fastq_paths(config):
     return list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext'])))
@@ -16,24 +18,6 @@ def fastq_names_wo_ext(fastq_paths):
 
 def fastq_aligned_names(fastq_paths):
     return _paired_fastq_samples_names(fastq_paths) + _single_fastq_samples_names(fastq_paths)
-
-
-def _sample_2_control(fastq_paths):
-    result = {}
-    for fq_path in fastq_paths:
-        ext = _split_to_fname_and_ext(fq_path)[1]
-        control_path = find_control_for(fq_path, ext)
-
-        if control_path:
-            control_sample = _sample_by_fastq_file(control_path)
-        else:
-            control_sample = None
-
-        sample = _sample_by_fastq_file(fq_path)
-
-        result[sample] = control_sample
-
-    return result
 
 
 def _split_to_fname_and_ext(path):
@@ -54,7 +38,7 @@ def _split_to_fname_and_ext(path):
 
 def _sample_by_fastq_file(fq_path):
     name = _split_to_fname_and_ext(fq_path)[0]
-    if re.match('.*_R?[12]_?$', name):
+    if not bool(config['fastq_single_end_only']) and re.match('.*_R?[12]_?$', name):
         # paired file
         return re.sub('_R?[12]_?$', '', name)
     else:
@@ -69,6 +53,8 @@ def _single_fastq_samples_names(fastq_paths):
 
 
 def _paired_fastq_samples_names(fastq_paths):
+    if bool(config['fastq_single_end_only']):
+        return []
     fq_names = set(fastq_names_wo_ext(fastq_paths))
     result = []
     for name in fq_names:
@@ -93,13 +79,96 @@ def _get_paired_suffixes(config):
     return suffix1, suffix2
 
 
-def is_trimmed(config):
-    return bool(config['trim_reads'])
+def bowtie2_input_paths(config, paired):
+    if bool(config['trim_reads']):
+        if paired:
+            suffix1, suffix2 = _get_paired_suffixes(config)
+            return [
+                f"trimmed/{{sample}}{suffix1}_trimmed.{config['fastq_ext']}",
+                f"trimmed/{{sample}}{suffix2}_trimmed.{config['fastq_ext']}"
+            ]
+        else:
+            return [
+                f"trimmed/{{sample}}_trimmed.{config['fastq_ext']}",
+            ]
+    else:
+        if paired:
+            suffix1, suffix2 = _get_paired_suffixes(config)
+            return [
+                config['fastq_dir'] + f"/{{sample}}{suffix1}.{config['fastq_ext']}",
+                config['fastq_dir'] + f"/{{sample}}{suffix2}.{config['fastq_ext']}",
+                ]
+        else:
+            return [
+                config['fastq_dir'] + f"/{{sample}}.{config['fastq_ext']}"
+            ]
 
 
 def trimmed_fastq_sample_names(fastq_paths):
     # here `name` could have _1 and _2 suffix in case of paired reads
     return [f"{name}_trimmed" for name in fastq_names_wo_ext(fastq_paths)]
+
+
+#################
+# Control reads #
+#################
+
+def _sample_2_control(fastq_paths):
+    result = {}
+    for fq_path in fastq_paths:
+        ext = _split_to_fname_and_ext(fq_path)[1]
+        control_path = find_control_for(fq_path, ext)
+        control_sample = _sample_by_fastq_file(control_path) if control_path else None
+        result[_sample_by_fastq_file(fq_path)] = control_sample
+    return result
+
+
+def find_control_for(file, ext="bam"):
+    if _is_control(file):
+        return ''
+    bam_name = os.path.basename(file).lower()
+    # Find all the files within folder
+    controls = [os.path.basename(n) for n in glob.glob(f'{os.path.dirname(file)}/*.{ext}') if _is_control(n)]
+    return max(controls, key=lambda x: _lcs(str(bam_name), x.lower())) if len(controls) > 0 else ''
+
+
+def _is_control(c):
+    return re.match('.*input.*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
+
+
+def _lcs(x, y):
+    """
+    Finds longest common subsequence
+    Code adopted from https://en.wikibooks.org/wiki/Algorithm_Implementation/
+    Strings/Longest_common_subsequence#Python
+    """
+    m = len(x)
+    n = len(y)
+    # An (m+1) times (n+1) matrix
+    c = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if x[i - 1] == y[j - 1]:
+                c[i][j] = c[i - 1][j - 1] + 1
+            else:
+                c[i][j] = max(c[i][j - 1], c[i - 1][j])
+
+    def back_track(i, j):
+        if i == 0 or j == 0:
+            return ""
+        elif x[i - 1] == y[j - 1]:
+            return back_track(i - 1, j - 1) + x[i - 1]
+        else:
+            if c[i][j - 1] > c[i - 1][j]:
+                return back_track(i, j - 1)
+            else:
+                return back_track(i - 1, j)
+
+    return len(back_track(m, n))
+
+####################
+# MACS2 parameters #
+####################
 
 
 def effective_genome_fraction(genome, chrom_sizes_path, pileup_bed):
@@ -148,6 +217,10 @@ def macs_species(genome):
     raise Exception('Unknown species {}'.format(genome))
 
 
+###################
+# SPAN parameters #
+###################
+
 def tuned_peaks_input_files(config, fastq_paths):
     span_bin = config['span_bin']
 
@@ -185,26 +258,3 @@ def labels2files(config):
     return labels2files_dict
 
 
-def bowtie2_input_paths(config, paired):
-    if is_trimmed(config):
-        if paired:
-            suffix1, suffix2 = _get_paired_suffixes(config)
-            return [
-                f"trimmed/{{sample}}{suffix1}_trimmed.{config['fastq_ext']}",
-                f"trimmed/{{sample}}{suffix2}_trimmed.{config['fastq_ext']}"
-            ]
-        else:
-            return [
-                f"trimmed/{{sample}}_trimmed.{config['fastq_ext']}",
-            ]
-    else:
-        if paired:
-            suffix1, suffix2 = _get_paired_suffixes(config)
-            return [
-                config['fastq_dir'] + f"/{{sample}}{suffix1}.{config['fastq_ext']}",
-                config['fastq_dir'] + f"/{{sample}}{suffix2}.{config['fastq_ext']}",
-            ]
-        else:
-            return [
-                config['fastq_dir'] + f"/{{sample}}.{config['fastq_ext']}"
-            ]

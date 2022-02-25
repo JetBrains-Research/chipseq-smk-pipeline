@@ -4,6 +4,9 @@ fastq_dir: reads
 # FASTQ file extension: "fastq.gz" or "fastq" or "fq.gz" or "fq", etc.
 fastq_ext: "fastq.gz"
 
+# Force single end processing
+fastq_single_end_only: False
+
 # ======================== TRIM READS ========================
 trim_reads: False
 
