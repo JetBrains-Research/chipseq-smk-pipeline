@@ -128,7 +128,7 @@ def find_control_for(file, ext="bam"):
         return ''
     bam_name = os.path.basename(file).lower()
     # Find all the files within folder
-    controls = [os.path.basename(n) for n in glob.glob(f'{os.path.dirname(file)}/*.{ext}') if _is_control(n)]
+    controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if _is_control(n)]
     return max(controls, key=lambda x: _lcs(str(bam_name), x.lower())) if len(controls) > 0 else ''
 
 
