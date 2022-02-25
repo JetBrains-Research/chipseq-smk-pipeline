@@ -7,7 +7,7 @@ from pipeline_util import _fastq_paths, _sample_2_control
 configfile: f"{workflow.basedir}/config.yaml"
 
 FASTQ_PATHS = _fastq_paths(config)
-SAMPLE_2_CONTROL_MAP = _sample_2_control(FASTQ_PATHS)
+SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS)
 
 onstart:
     print(f"Working directory: {os.getcwd()}")

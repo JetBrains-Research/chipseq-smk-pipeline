@@ -16,8 +16,8 @@ def fastq_names_wo_ext(fastq_paths):
     return [_split_to_fname_and_ext(f)[0] for f in fastq_paths]
 
 
-def fastq_aligned_names(fastq_paths):
-    return _paired_fastq_samples_names(fastq_paths) + _single_fastq_samples_names(fastq_paths)
+def fastq_aligned_names(config, fastq_paths):
+    return _paired_fastq_samples_names(config, fastq_paths) + _single_fastq_samples_names(config, fastq_paths)
 
 
 def _split_to_fname_and_ext(path):
@@ -36,7 +36,7 @@ def _split_to_fname_and_ext(path):
         return name, dot_ext[1:]
 
 
-def _sample_by_fastq_file(fq_path):
+def _sample_by_fastq_file(config, fq_path):
     name = _split_to_fname_and_ext(fq_path)[0]
     if not bool(config['fastq_single_end_only']) and re.match('.*_R?[12]_?$', name):
         # paired file
@@ -46,13 +46,15 @@ def _sample_by_fastq_file(fq_path):
         return name
 
 
-def _single_fastq_samples_names(fastq_paths):
-    paired_samples = _paired_fastq_samples_names(fastq_paths)
+def _single_fastq_samples_names(config, fastq_paths):
+    if bool(config['fastq_single_end_only']):
+        return fastq_names_wo_ext(fastq_paths)
+    paired_samples = _paired_fastq_samples_names(config, fastq_paths)
     return [name for name in fastq_names_wo_ext(fastq_paths)
             if not re.match('.*_R?[12]_?$', name) or re.sub('_R?[12]_?$', '', name) not in paired_samples]
 
 
-def _paired_fastq_samples_names(fastq_paths):
+def _paired_fastq_samples_names(config, fastq_paths):
     if bool(config['fastq_single_end_only']):
         return []
     fq_names = set(fastq_names_wo_ext(fastq_paths))
@@ -113,13 +115,13 @@ def trimmed_fastq_sample_names(fastq_paths):
 # Control reads #
 #################
 
-def _sample_2_control(fastq_paths):
+def _sample_2_control(config, fastq_paths):
     result = {}
     for fq_path in fastq_paths:
         ext = _split_to_fname_and_ext(fq_path)[1]
         control_path = find_control_for(fq_path, ext)
-        control_sample = _sample_by_fastq_file(control_path) if control_path else None
-        result[_sample_by_fastq_file(fq_path)] = control_sample
+        control_sample = _sample_by_fastq_file(config, control_path) if control_path else None
+        result[_sample_by_fastq_file(config, fq_path)] = control_sample
     return result
 
 
@@ -225,7 +227,7 @@ def tuned_peaks_input_files(config, fastq_paths):
     span_bin = config['span_bin']
 
     tuned_peaks = []
-    for sample in fastq_aligned_names(fastq_paths):
+    for sample in fastq_aligned_names(config, fastq_paths):
         labels_file = find_labels_for_sample(sample, config)
         if labels_file:
             tuned_peaks.append(f'span/{sample}_{span_bin}_tuned.peak')

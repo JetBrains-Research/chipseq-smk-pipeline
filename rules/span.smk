@@ -6,7 +6,7 @@ localrules: all_span, all_span_tuned, download_span
 rule all_span:
     input:
         span_peaks=expand(f'span/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}_{config["span_gap"]}.peak',
-            sample=fastq_aligned_names(FASTQ_PATHS)
+            sample=fastq_aligned_names(config, FASTQ_PATHS)
         ) if config['span'] else []
 
 rule all_span_tuned:
