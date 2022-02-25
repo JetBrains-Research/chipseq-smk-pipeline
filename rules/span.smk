@@ -43,7 +43,7 @@ rule call_peaks_span:
     threads: 4
     params:
         span_params=config['span_params'],
-        span_iterations=config['span_iteration'],
+        span_iterations=config['span_iterations'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
         threads = 4,
