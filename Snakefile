@@ -43,7 +43,7 @@ onstart:
 include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"
 include: "rules/alignment.smk"
-include: "rules/filter_aligned_reads.smk"
+include: "rules/deduplicated_reads.smk"
 include: "rules/reads_coverage.smk"
 include: "rules/bam_quality_metrics.smk"
 include: "rules/macs2.smk"
@@ -69,10 +69,8 @@ rule all:
         # Alignment
         rules.all_alignment_results.input,
 
-        # Filter only aligned reads: not all peak callers capable to exclude
-        # unaligned reads or reads aligned with bad quality
-        # Optionally deduplicated bams and save to 'deduplicated' folder
-        rules.all_filter_aligned_reads_results.input,
+        # Deduplicated bams saved to 'deduplicated' folder
+        rules.all_deduplicated_reads_results.input,
 
         # Visualization
         rules.all_reads_coverage_results.input,

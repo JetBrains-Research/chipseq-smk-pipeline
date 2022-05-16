@@ -1,13 +1,13 @@
 from pipeline_util import *
 
 ruleorder: bowtie2_align_paired > bowtie2_align_single
-localrules: all_alignment_results, download_chrom_sizes, download_fa, bam_raw_multiqc
+localrules: all_alignment_results,download_chrom_sizes,download_fa,bam_raw_multiqc
 
 ######## Step: Alignment QC ##################
 rule all_alignment_results:
     input:
-         bams=expand("bams/{sample}.bam", sample=fastq_aligned_names(config, FASTQ_PATHS)),
-         multiqc_bam_raw='multiqc/bam_raw/multiqc.html',
+        bams=expand("bams/{sample}.bam",sample=fastq_aligned_names(config,FASTQ_PATHS)),
+        multiqc_bam_raw='multiqc/bam_raw/multiqc.html',
 
 # Indexes:
 rule download_chrom_sizes:
@@ -22,7 +22,7 @@ rule download_fa:
     log: 'logs/fa.log'
 
     shell:
-        "rsync -avz --partial --exclude='*.txt' " # To include single chromosome use: "rsync -avz --partial  --include='chr15*' --exclude='*' "
+        "rsync -avz --partial --exclude='*.txt' "  # To include single chromosome use: "rsync -avz --partial  --include='chr15*' --exclude='*' "
         'rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} &> {log}'
 
 rule bowtie2_index:
@@ -33,9 +33,9 @@ rule bowtie2_index:
     conda: '../envs/bio.env.yaml'
     threads: 4
     resources:
-        threads = 4,
-        mem = 16, mem_ram = 12,
-        time = 60 * 120
+        threads=4,
+        mem=16,mem_ram=12,
+        time=60 * 120
     params:
         files_list=lambda wildcards: ','.join(glob('fa/*.fa.gz')),
         target='bowtie2-index/{genome}'.format(genome=config['genome'])
@@ -44,39 +44,39 @@ rule bowtie2_index:
 # Align
 rule bowtie2_align_single:
     input:
-        sample=bowtie2_input_paths(config, False),
+        sample=bowtie2_input_paths(config,False),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
 
     threads: 4
     resources:
-        threads = 4,
-        mem = 16, mem_ram = 12,
-        time = 60 * 120
+        threads=4,
+        mem=16,mem_ram=12,
+        time=60 * 120
     params:
         index=lambda wildcards, input: os.path.join(
-            str(input.bowtie2_index_path), config['genome']
+            str(input.bowtie2_index_path),config['genome']
         ),
         extra=''
     wrapper: "0.36.0/bio/bowtie2/align"
 
 rule bowtie2_align_paired:
     input:
-        sample=bowtie2_input_paths(config, True),
+        sample=bowtie2_input_paths(config,True),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
 
     threads: 4
     resources:
-        threads = 4,
-        mem = 16, mem_ram = 12,
-        time = 60 * 120
+        threads=4,
+        mem=16,mem_ram=12,
+        time=60 * 120
     conda: '../envs/bio.env.yaml'
     params:
         index=lambda wildcards, input: os.path.join(
-            str(input.bowtie2_index_path), config['genome']
+            str(input.bowtie2_index_path),config['genome']
         ),
         extra=config["bowtie2_params"]
     wrapper: "0.36.0/bio/bowtie2/align"
@@ -92,12 +92,29 @@ rule bam_raw_multiqc:
     input:
         expand(
             'logs/bam_raw/bowtie2/{sample}.log',
-            sample=fastq_aligned_names(config, FASTQ_PATHS)
+            sample=fastq_aligned_names(config,FASTQ_PATHS)
         ),
         expand(
             'qc/bam_raw/samtools_stats/{sample}.txt',
-            sample=fastq_aligned_names(config, FASTQ_PATHS)
+            sample=fastq_aligned_names(config,FASTQ_PATHS)
         )
     output: 'multiqc/bam_raw/multiqc.html'
     log: 'multiqc/bam_raw/multiqc.log'
     wrapper: '0.36.0/bio/multiqc'
+
+# Filter aligned reads with good mapping score: (remove not aligned and bad mapped)
+rule filter_sort_bam_single:
+    input: '{anywhere}/{sample}.bam.raw'
+    output: '{anywhere}/{sample}.bam'
+    log: 'logs/bam_filtered/{anywhere}/{sample}.log'
+
+    conda: '../envs/bio.env.yaml'
+    threads: 4
+    resources:
+        threads=4,
+        mem=16,mem_ram=12,
+        time=60 * 120
+    shell:
+        'samtools view -bh -q30 {input} > {output}.filtered 2> {log} &&'
+        ' samtools sort {output}.filtered -o {output}  &> {log} &&'
+        ' rm {output}.filtered  &>> {log}'
