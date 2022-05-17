@@ -86,6 +86,7 @@ rule call_peaks_sicer:
         control_arg=lambda wildcards, input: os.path.basename(input.control_pileup) if input.get('control_pileup', None) else "",
         pileups_dir=lambda wildcards, input: os.path.split(str(input.signal_pileup))[0],
         peaks_file=lambda wildcards, output: os.path.basename(output[0]),
+        workdir=WORK_DIR,
         fragment=config['sicer_fragment'],
         genome=config['genome'],
         script=lambda wildcards, input: "SICER.sh" if input.get('control_pileup', None) else "SICER-rb.sh"
@@ -103,11 +104,11 @@ rule call_peaks_sicer:
         #       ["OutputDir"] ["Species"] ["redundancy threshold"]
         #       ["window size (bp)"] ["fragment size"] ["effective genome fraction"]
         #       ["gap size (bp)"] ["E-value"]
-        'echo "Significance threshold: {params.significance}" > {log} &&'
+        'echo "Significance threshold: {params.significance}" > {params.workdir}/{log} &&'
         ' tmp_sicer=$(mktemp -d -p $(pwd) -t sicer-XXXXXXXXXX) && mkdir -p $tmp_sicer && cd $tmp_sicer && '
-        '  {params.script} ../{params.pileups_dir} {params.signal_pileup_bed_fname} {params.control_arg}'
+        '  {params.script} {params.workdir}/{params.pileups_dir} {params.signal_pileup_bed_fname} {params.control_arg}'
         '    $(pwd) {params.genome} 1 {wildcards.width}'
-        '    {params.fragment} $(cat "../{input.effective_genome_fraction}")'
-        '    {wildcards.gap} {params.significance} &>> ../{log} &&'
-        ' ls -lah  &>> ../{log} &&'
-        ' mv {params.peaks_file} ../{output} &>> ../{log}'
+        '    {params.fragment} $(cat "{params.workdir}/{input.effective_genome_fraction}")'
+        '    {wildcards.gap} {params.significance} &>> {params.workdir}/{log} &&'
+        ' ls -lah  &>> {params.workdir}/{log} &&'
+        ' mv {params.peaks_file} {params.workdir}/{output} &>> {params.workdir}/{log}'

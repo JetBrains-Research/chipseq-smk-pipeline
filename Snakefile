@@ -6,11 +6,12 @@ from pipeline_util import _fastq_paths, _sample_2_control
 # using --config options or from --configfile file.
 configfile: f"{workflow.basedir}/config.yaml"
 
+WORK_DIR = os.getcwd()
 FASTQ_PATHS = _fastq_paths(config)
 SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS)
 
 onstart:
-    print(f"Working directory: {os.getcwd()}")
+    print(f"Working directory: {WORK_DIR}")
     print(f"Snakefile directory: {workflow.basedir}")
     print(f"Environment: TMPDIR={os.environ.get('TMPDIR', '<n/a>')}")
     print(f"Environment: PATH={os.environ.get('PATH', '<n/a>')} ")
