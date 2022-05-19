@@ -86,5 +86,4 @@ rule all:
         rules.all_sicer_results.input,
 
         # span
-        rules.all_span.input,
-        rules.all_span_tuned.input
+        rules.all_span.input

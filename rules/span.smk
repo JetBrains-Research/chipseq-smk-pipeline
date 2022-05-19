@@ -1,6 +1,6 @@
 from pipeline_util import *
 
-localrules: all_span, all_span_tuned, download_span
+localrules: download_span
 
 ######## Step: Peak Calling: SPAN ##################
 rule all_span:
@@ -50,41 +50,7 @@ rule call_peaks_span:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
-         'java -Xmx8G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
+         'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
          '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
          '--workdir span --iterations {params.span_iterations} --threads {threads} '
          '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
-
-
-def span_tuned_input_fun(config):
-    """Return inner function here to be launched during execution"""
-    def inner(wildcards):
-        args = dict(
-            span=rules.download_span.output,
-            chrom_sizes=rules.download_chrom_sizes.output
-        )
-
-        sample = wildcards.sample
-        anns_file = find_labels_for_sample(sample, config)
-        assert anns_file, f"Peaks annotations file is missing for {sample}"
-        args['span_markup'] = anns_file
-        args['span_iterations'] = config['span_iterations']
-        return args
-    return inner
-
-rule call_peaks_span_tuned:
-    input:
-        unpack(span_tuned_input_fun(config))
-    output: 'span/{sample}_{bin}_tuned.peak'
-    log: 'logs/span/{sample}_{bin}_tuned.log'
-
-    conda: '../envs/java.env.yaml'
-    threads: 4
-    resources:
-        threads = 4,
-        mem = 16, mem_ram = 12,
-        time = 60 * 120
-    shell:
-         'java -Xmx8G -jar {input.span} analyze --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir span --iterations {input.span_iterations} --threads {threads} '
-         '--labels {input.span_markup} --peaks {output} &> {log}'

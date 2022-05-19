@@ -52,5 +52,3 @@ span_gap: 3
 span_fdr: 0.05
 span_iterations: 20
 span_params: ""
-span_labels_dir: /peaks_annotations/
-span_markup: ""
