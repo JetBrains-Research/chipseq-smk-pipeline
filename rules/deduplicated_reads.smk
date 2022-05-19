@@ -14,10 +14,10 @@ rule bam_deduplication:
         metrics="qc/picard/{sample}.txt"
     log: "logs/bam_deduplicated/{sample}.log"
 
-    threads: 2
+    threads: 1
     resources:
-        threads=2,
-        mem=8,mem_ram=4,
-        time=60 * 120
+        threads = 1,
+        mem = 16, mem_ram = 12,
+        time = 60 * 120
     params: "REMOVE_DUPLICATES=True"
     wrapper: "0.31.1/bio/picard/markduplicates"
