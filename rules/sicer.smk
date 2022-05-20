@@ -105,7 +105,7 @@ rule call_peaks_sicer:
         #       ["window size (bp)"] ["fragment size"] ["effective genome fraction"]
         #       ["gap size (bp)"] ["E-value"]
         'echo "Significance threshold: {params.significance}" > {params.workdir}/{log} &&'
-        ' tmp_sicer=$(mktemp -d -p $(pwd) -t sicer-XXXXXXXXXX) && mkdir -p $tmp_sicer && cd $tmp_sicer && '
+        ' tmp_sicer=$(mktemp -d) && mkdir -p $tmp_sicer && cd $tmp_sicer && '
         '  {params.script} {params.workdir}/{params.pileups_dir} {params.signal_pileup_bed_fname} {params.control_arg}'
         '    $(pwd) {params.genome} 1 {wildcards.width}'
         '    {params.fragment} $(cat "{params.workdir}/{input.effective_genome_fraction}")'
