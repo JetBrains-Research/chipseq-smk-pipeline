@@ -31,10 +31,10 @@ rule bowtie2_index:
     log: 'logs/bam_raw/bowtie2/bowtie2-index.log'
 
     conda: '../envs/bio.env.yaml'
-    threads: 4
+    threads: 8
     resources:
-        threads=4,
-        mem=16,mem_ram=12,
+        threads=8,
+        mem=32,mem_ram=28,
         time=60 * 120
     params:
         files_list=lambda wildcards: ','.join(glob('fa/*.fa.gz')),
@@ -49,9 +49,9 @@ rule bowtie2_align_single:
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
 
-    threads: 4
+    threads: 8
     resources:
-        threads=4,
+        threads=8,
         mem=16,mem_ram=12,
         time=60 * 120
     params:
@@ -68,9 +68,9 @@ rule bowtie2_align_paired:
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
 
-    threads: 4
+    threads: 8
     resources:
-        threads=4,
+        threads=8,
         mem=16,mem_ram=12,
         time=60 * 120
     conda: '../envs/bio.env.yaml'
