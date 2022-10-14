@@ -9,13 +9,10 @@ rule all_span:
             sample=fastq_aligned_names(config, FASTQ_PATHS)
         ) if bool(config['span']) else []
 
-rule all_span_tuned:
-    input:
-        span_tuned_peaks=tuned_peaks_input_files(config, FASTQ_PATHS)
 
 rule download_span:
-    output: 'bin/span-0.13.5244.jar'
-    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-0.13.5244.jar'
+    output: 'bin/span-1.0.5573.jar'
+    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-1.0.5573.jar'
 
 
 def span_input_fun(wildcards):
