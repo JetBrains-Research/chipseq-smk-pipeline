@@ -47,8 +47,8 @@ sicer_evalue: 100
 
 # ======================== SPAN ========================
 span: False
-span_bin: 200
+span_bin: 50
 span_gap: 3
 span_fdr: 0.05
 span_iterations: 20
-span_params: ""
+span_params: "--clip"
