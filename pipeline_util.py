@@ -7,6 +7,10 @@ from glob import glob
 # Fastq processing #
 ####################
 
+def is_control(c):
+    return re.match('.*(input|control|wce).*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
+
+
 def _fastq_paths(config):
     return list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext'])))
 
@@ -99,7 +103,7 @@ def bowtie2_input_paths(config, paired):
             return [
                 config['fastq_dir'] + f"/{{sample}}{suffix1}.{config['fastq_ext']}",
                 config['fastq_dir'] + f"/{{sample}}{suffix2}.{config['fastq_ext']}",
-                ]
+            ]
         else:
             return [
                 config['fastq_dir'] + f"/{{sample}}.{config['fastq_ext']}"
@@ -134,10 +138,6 @@ def find_control_for(file, ext="bam"):
     return max(controls, key=lambda x: _lcs(str(bam_name), x.lower())) if len(controls) > 0 else ''
 
 
-def is_control(c):
-    return re.match('.*input.*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
-
-
 def _lcs(x, y):
     """
     Finds longest common subsequence
@@ -167,6 +167,7 @@ def _lcs(x, y):
                 return back_track(i - 1, j)
 
     return len(back_track(m, n))
+
 
 ####################
 # MACS2 parameters #
