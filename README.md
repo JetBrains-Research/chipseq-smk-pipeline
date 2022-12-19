@@ -2,10 +2,28 @@
 
 # chipseq-smk-pipeline
 
-ChIP-Seq processing pipeline - [snakemake](https://snakemake.readthedocs.io/en/stable/) version
-of [washu](https://github.com/JetBrains-Research/washu) pipeline.\
-Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
-for [PyCharm](https://www.jetbrains.com/pycharm/) IDE.
+[Snakemake](https://snakemake.readthedocs.io/en/stable/) based pipeline for ChIP-seq and ATAC-seq datasets processing
+from raw data QC and alignment to visualization and peak calling.
+
+Pipeline
+--------
+Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`.
+Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property.
+FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
+
+| Folder           | Description                                                                          |
+|------------------|--------------------------------------------------------------------------------------|
+| `./config.yaml`  | Default pipeline options                                                             |
+| `./trimmed`      | Trimmed FASTQ file, if `trim_reads` option is True.                                  |
+| `./bams`         | BAMs with aligned reads, `MAPQ >= 30`                                                |
+| `./deduplicated` | Deduplicated version of `./bams` files                                               |
+| `./bw`           | BAM coverage visualization using [DeepTools](https://doi.org/10.1093/nar/gku365)     |
+| `./macs2`        | [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137) peaks                              |
+| `./sicer`        | [SICER](https://doi.org/10.1093/bioinformatics/btp340) peaks                         |
+| `./span`         | [SPAN](https://doi.org/10.1093/bioinformatics/btab376) peaks                         |
+| `./multiqc`      | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps |
+| `./qc`           | QC Reports                                                                           |
+| `./logs`         | Shell commands logs                                                                  |
 
 Configuration
 -------------
@@ -62,24 +80,13 @@ $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.
 
 P.S: Use `--config` to override default options from `./config.yaml` file
 
-Pipeline Description
------
-Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`.
-Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property.
-FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
+SnakeCharm
+----------
 
-| Folder           | Description                                                                                           |
-|------------------|-------------------------------------------------------------------------------------------------------|
-| `./config.yaml`  | Default pipeline options                                                                              |
-| `./trimmed`      | Trimmed FASTQ file, if `trim_reads` option is True. BAM files will contain trimmed reads in this case |
-| `./bams`         | BAMs with aligned reads, `MAPQ >= 30`                                                                 |
-| `./deduplicated` | Deduplicated version of `./bams` files                                                                |
-| `./macs2`        | [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137) peaks                                               |
-| `./sicer`        | [SICER](https://doi.org/10.1093/bioinformatics/btp340) peaks                                          |
-| `./span`         | [SPAN](https://doi.org/10.1093/bioinformatics/btab376) peaks                                          |
-| `./multiqc`      | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps                  |
-| `./qc`           | QC Reports                                                                                            |
-| `./logs`         | Shell commands logs                                                                                   |
+ChIP-Seq processing pipeline - [snakemake](https://snakemake.readthedocs.io/en/stable/) version
+of [washu](https://github.com/JetBrains-Research/washu) pipeline.\
+Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
+for [PyCharm](https://www.jetbrains.com/pycharm/) IDE.
 
 Useful links
 ------------

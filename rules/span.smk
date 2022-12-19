@@ -11,8 +11,8 @@ rule all_span:
 
 
 rule download_span:
-    output: 'bin/span-1.0.5598.jar'
-    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-1.0.5598.jar'
+    output: 'bin/span-1.0.5604.jar'
+    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-1.0.5604.jar'
 
 
 def span_input_fun(wildcards):
@@ -41,6 +41,7 @@ rule call_peaks_span:
     params:
         span_params=config['span_params'],
         span_iterations=config['span_iterations'],
+        span_threshold=config['span_threshold'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
         threads = 4,
@@ -49,5 +50,5 @@ rule call_peaks_span:
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
          '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir span --iterations {params.span_iterations} --threads {threads} '
+         '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} --threads {threads} '
          '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'

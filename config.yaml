@@ -50,5 +50,6 @@ span: False
 span_bin: 50
 span_gap: 3
 span_fdr: 0.05
-span_iterations: 20
+span_iterations: 50
+span_threshold: 0.1
 span_params: "--clip"
