@@ -6,7 +6,7 @@ localrules: download_span
 rule all_span:
     input:
         span_peaks=expand(f'span/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}_{config["span_gap"]}.peak',
-            sample=fastq_aligned_names(config, FASTQ_PATHS)
+            sample=filter(lambda f: not is_control(f), fastq_aligned_names(config, FASTQ_PATHS))
         ) if bool(config['span']) else []
 
 

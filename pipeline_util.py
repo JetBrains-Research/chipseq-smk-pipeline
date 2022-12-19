@@ -126,15 +126,15 @@ def _sample_2_control(config, fastq_paths):
 
 
 def find_control_for(file, ext="bam"):
-    if _is_control(file):
+    if is_control(file):
         return ''
     bam_name = os.path.basename(file).lower()
     # Find all the files within folder
-    controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if _is_control(n)]
+    controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if is_control(n)]
     return max(controls, key=lambda x: _lcs(str(bam_name), x.lower())) if len(controls) > 0 else ''
 
 
-def _is_control(c):
+def is_control(c):
     return re.match('.*input.*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
 
 
