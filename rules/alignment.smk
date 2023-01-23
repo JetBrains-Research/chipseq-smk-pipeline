@@ -1,13 +1,16 @@
 from pipeline_util import *
 
 ruleorder: bowtie2_align_paired > bowtie2_align_single
-localrules: all_alignment_results,download_chrom_sizes,download_fa,bam_raw_multiqc
+localrules: download_chrom_sizes,download_fa,all_alignment_results,all_alignment_qc,bam_raw_multiqc
 
-######## Step: Alignment QC ##################
+######## Step: Alignment & QC ##################
 rule all_alignment_results:
     input:
-        bams=expand("bams/{sample}.bam",sample=fastq_aligned_names(config,FASTQ_PATHS)),
-        multiqc_bam_raw='multiqc/bam_raw/multiqc.html',
+        bams=expand("bams/{sample}.bam",sample=fastq_aligned_names(config,FASTQ_PATHS))
+
+rule all_alignment_qc:
+    input:
+        multiqc_bam_raw='multiqc/bam_raw/multiqc.html'
 
 # Indexes:
 rule download_chrom_sizes:

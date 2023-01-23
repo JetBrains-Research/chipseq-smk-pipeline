@@ -63,27 +63,21 @@ rule all:
     input:
         # Reads qc
         rules.all_raw_qc_results.input,
-
         # Optional reads trimming, this option is controlled by setting: config[trim_reads]
         *([] if not bool(config['trim_reads']) else rules.all_trim_fastq_results.input),
-
         # Alignment
         rules.all_alignment_results.input,
-
+        # Alignment qc
+        rules.all_alignment_qc.input,
         # Deduplicated bams saved to 'deduplicated' folder
         rules.all_deduplicated_reads_results.input,
-
         # Visualization
         rules.all_reads_coverage_results.input,
-
         # Optional: Quality metrics
         rules.all_bam_quality_metrics_results.input,
-
         # macs2
         rules.all_macs2_results.input,
-
         # sicer
         rules.all_sicer_results.input,
-
         # span
         rules.all_span.input
