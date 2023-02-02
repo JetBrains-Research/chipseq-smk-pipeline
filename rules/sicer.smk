@@ -2,10 +2,6 @@ from pipeline_util import *
 
 localrules: all_sicer_results
 
-# !!!!!
-# SICER doesn't support out of the box hg38 and mm10, needs to be tweaked a bit
-# !!!!!
-
 ######## Step: Peak Calling: SICER ##################
 def sicer_all_peaks_input():
     files = []
