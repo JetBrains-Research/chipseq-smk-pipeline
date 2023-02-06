@@ -132,10 +132,22 @@ def _sample_2_control(config, fastq_paths):
 def find_control_for(file, ext="bam"):
     if is_control(file):
         return ''
-    bam_name = os.path.basename(file).lower()
     # Find all the files within folder
     controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if is_control(n)]
-    return max(controls, key=lambda x: _lcs(str(bam_name), x.lower())) if len(controls) > 0 else ''
+    return _lcs_or_parts(os.path.basename(file), controls)
+
+
+def _lcs_or_parts(bam_name, controls):
+    if len(controls) == 0:
+        return ''
+    # Compute lcs for _ and - separated names, otherwise compute for all symbols
+    lcs_parts = [_lcs(re.split('[\-_\s\.]+', str(bam_name.lower())),
+                      re.split('[\-_\s\.]+', x.lower())) for x in controls]
+    cps = [i for i in range(len(lcs_parts)) if lcs_parts[i] == max(lcs_parts)]
+    if len(cps) == 1:
+        return controls[cps[0]]
+    # Otherwise return most similar for string
+    return max(controls, key=lambda x: _lcs(str(bam_name.lower()), x.lower())) if len(controls) > 0 else ''
 
 
 def _lcs(x, y):
@@ -218,3 +230,12 @@ def macs_species(genome):
     elif re.match('^mm[0-9]+$', genome):
         return 'mm'
     raise Exception('Unknown species {}'.format(genome))
+
+
+# Small test
+if __name__ == '__main__':
+    print(_lcs_or_parts('GSM646340_H1_H3K36me3_rep2.bam', [
+        'GSM646390_HMEC_Input_rep2.bam',
+        'GSM646351_H1_Input_rep1.bam',
+        'GSM646352_H1_Input_rep2.bam',
+    ]))
