@@ -12,14 +12,14 @@ trim_reads: False
 
 # ======================== Alignment ========================
 # UCSC genome: e.g. hg19, hg38, mm9, mm10, ..
-genome: hg19
+genome: hg38
 
 # For ATAC-Seq used: "-X 2000 --dovetail"
 bowtie2_params: ""
 #bowtie2_params: "-X 2000 --dovetail"
 
 # ======================== MACS2 ========================
-macs2: True
+macs2: False
 # MACS2 Narrow:
 #macs2_mode: narrow
 #macs2_params: "-q 0.05"
@@ -47,9 +47,9 @@ sicer_evalue: 100
 
 # ======================== SPAN ========================
 span: False
-span_bin: 50
+span_bin: 100
 span_gap: 3
 span_fdr: 0.05
-span_iterations: 50
+span_iterations: 20
 span_threshold: 0.1
 span_params: "--clip"

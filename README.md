@@ -16,7 +16,6 @@ FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `f
 | `./config.yaml`  | Default pipeline options                                                             |
 | `./trimmed`      | Trimmed FASTQ file, if `trim_reads` option is True.                                  |
 | `./bams`         | BAMs with aligned reads, `MAPQ >= 30`                                                |
-| `./deduplicated` | Deduplicated version of `./bams` files                                               |
 | `./bw`           | BAM coverage visualization using [DeepTools](https://doi.org/10.1093/nar/gku365)     |
 | `./macs2`        | [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137) peaks                              |
 | `./sicer`        | [SICER](https://doi.org/10.1093/bioinformatics/btp340) peaks                         |
@@ -74,8 +73,8 @@ Example of ATAC-Seq processing on qsub
 $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
     --directory <work_dir> \
     --config fastq_dir=<fastq_dir> genome=<genome> \
-    macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
-    span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
+    macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
+    span=True span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
 ```
 
 P.S: Use `--config` to override default options from `./config.yaml` file

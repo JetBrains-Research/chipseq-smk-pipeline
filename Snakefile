@@ -44,7 +44,6 @@ onstart:
 include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"
 include: "rules/alignment.smk"
-include: "rules/deduplicated_reads.smk"
 include: "rules/reads_coverage.smk"
 include: "rules/bam_quality_metrics.smk"
 include: "rules/macs2.smk"
@@ -69,8 +68,6 @@ rule all:
         rules.all_alignment_results.input,
         # Alignment qc
         rules.all_alignment_qc.input,
-        # Deduplicated bams saved to 'deduplicated' folder
-        rules.all_deduplicated_reads_results.input,
         # Visualization
         rules.all_reads_coverage_results.input,
         # Optional: Quality metrics
