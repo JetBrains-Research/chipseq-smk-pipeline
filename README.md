@@ -11,18 +11,18 @@ Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`.
 Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property.
 FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
 
-| Folder           | Description                                                                          |
-|------------------|--------------------------------------------------------------------------------------|
-| `./config.yaml`  | Default pipeline options                                                             |
-| `./trimmed`      | Trimmed FASTQ file, if `trim_reads` option is True.                                  |
-| `./bams`         | BAMs with aligned reads, `MAPQ >= 30`                                                |
-| `./bw`           | BAM coverage visualization using [DeepTools](https://doi.org/10.1093/nar/gku365)     |
-| `./macs2`        | [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137) peaks                              |
-| `./sicer`        | [SICER](https://doi.org/10.1093/bioinformatics/btp340) peaks                         |
-| `./span`         | [SPAN](https://doi.org/10.1093/bioinformatics/btab376) peaks                         |
-| `./multiqc`      | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps |
-| `./qc`           | QC Reports                                                                           |
-| `./logs`         | Shell commands logs                                                                  |
+| Path          | Description                                                                          |
+|---------------|--------------------------------------------------------------------------------------|
+| `config.yaml` | Default pipeline options                                                             |
+| `trimmed`     | Trimmed FASTQ file, if `trim_reads` option is True.                                  |
+| `bams`        | BAMs with aligned reads, `MAPQ >= 30`                                                |
+| `bw`          | BAM coverage visualization using [DeepTools](https://doi.org/10.1093/nar/gku365)     |
+| `macs2`       | [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137) peaks                              |
+| `sicer`       | [SICER](https://doi.org/10.1093/bioinformatics/btp340) peaks                         |
+| `span`        | [SPAN](https://doi.org/10.1093/bioinformatics/btab376) peaks                         |
+| `qc`          | QC Reports                                                                           |
+| `multiqc`     | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps |
+| `logs`        | Shell commands logs                                                                  |
 
 Configuration
 -------------
@@ -36,7 +36,7 @@ The only tool required to launch the pipeline is `conda`.
 Create a Conda environment for `snakemake`:
 
 ```bash
-$ conda env create --file ./environment.yaml --name snakemake
+$ conda env create --file environment.yaml --name snakemake
 ```
 
 Activate the newly created environment:
@@ -56,7 +56,7 @@ $ snakemake all [--cores <cores>] --use-conda --directory <work_dir> fastq_dir=<
 
 Use `start_with_bams=True` config option to start with existing bam files.
 
-P.S: Use `--config` to override default options from `./config.yaml` file
+P.S: Use `--config` to override default options from `config.yaml` file
 
 QSUB
 ----
@@ -79,7 +79,7 @@ $ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.
     span=True span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
 ```
 
-P.S: Use `--config` to override default options from `./config.yaml` file
+P.S: Use `--config` to override default options from `config.yaml` file
 
 SnakeCharm
 ----------
