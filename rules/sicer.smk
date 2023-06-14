@@ -14,7 +14,7 @@ def sicer_all_peaks_input():
     # XXX: change significance only via config, SICER rule takes the value from
     # config, not via wildcards
 
-    for sample in filter(lambda f: not is_control(f), fastq_aligned_names(config, FASTQ_PATHS)):
+    for sample in filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS)):
         if SAMPLE_2_CONTROL_MAP[sample] is None:
             # w/o control
             significance = config['sicer_evalue']

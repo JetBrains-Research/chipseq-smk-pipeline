@@ -1,5 +1,5 @@
 from pipeline_util import *
-from pipeline_util import _fastq_paths, _sample_2_control
+from pipeline_util import _fastq_paths, _bams_paths, _sample_2_control
 
 # use this file as a basic config file in your working directory
 # if you'd like to customise it: fix it directly or override required args
@@ -8,7 +8,9 @@ configfile: f"{workflow.basedir}/config.yaml"
 
 WORK_DIR = os.getcwd()
 FASTQ_PATHS = _fastq_paths(config)
-SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS)
+BAMS_DIR = os.path.join(WORK_DIR, 'bams')
+BAMS_PATHS = _bams_paths(BAMS_DIR)
+SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS, BAMS_PATHS)
 
 onstart:
     print(f"Working directory: {WORK_DIR}")
@@ -29,7 +31,10 @@ onstart:
     print("Snakemake shell check")
     shell('echo "  SNAKEMAKE VERSION: $(snakemake --version)"')
 
-    print("FastQ Reads:", config['fastq_dir'])
+    if bool(config['start_with_bams']):
+        print("BAM Dir:", BAMS_DIR)
+    else:
+        print("FastQ Reads:", config['fastq_dir'])
 
     #---------------------------------------------------------------------
     # Let's create symlinks for several pipeline source dirs to simplify
@@ -60,18 +65,20 @@ if not os.path.exists(config['fastq_dir']):
 
 rule all:
     input:
-        # Reads qc
-        rules.all_raw_qc_results.input,
-        # Optional reads trimming, this option is controlled by setting: config[trim_reads]
-        *([] if not bool(config['trim_reads']) else rules.all_trim_fastq_results.input),
-        # Alignment
-        rules.all_alignment_results.input,
-        # Alignment qc
-        rules.all_alignment_qc.input,
+        *([] if bool(config['start_with_bams']) else [
+            # Reads qc
+            rules.all_raw_qc_results.input,
+            # Optional reads trimming, this option is controlled by setting: config[trim_reads]
+            *([] if not bool(config['trim_reads']) else rules.all_trim_fastq_results.input),
+            # Alignment
+            rules.all_alignment_results.input,
+            # Alignment qc
+            rules.all_alignment_qc.input,
+            # Optional: Quality metrics
+            rules.all_bam_quality_metrics_results.input,
+        ]),
         # Visualization
         rules.all_reads_coverage_results.input,
-        # Optional: Quality metrics
-        rules.all_bam_quality_metrics_results.input,
         # macs2
         rules.all_macs2_results.input,
         # sicer

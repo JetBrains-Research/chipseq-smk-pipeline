@@ -6,7 +6,7 @@ localrules: download_chrom_sizes,download_fa,all_alignment_results,all_alignment
 ######## Step: Alignment & QC ##################
 rule all_alignment_results:
     input:
-        bams=expand("bams/{sample}.bam",sample=fastq_aligned_names(config,FASTQ_PATHS))
+        bams=expand("bams/{sample}.bam",sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
 
 rule all_alignment_qc:
     input:
@@ -95,11 +95,11 @@ rule bam_raw_multiqc:
     input:
         expand(
             'logs/bam_raw/bowtie2/{sample}.log',
-            sample=fastq_aligned_names(config,FASTQ_PATHS)
+            sample=fastq_aligned_names(config, FASTQ_PATHS)
         ),
         expand(
             'qc/bam_raw/samtools_stats/{sample}.txt',
-            sample=fastq_aligned_names(config,FASTQ_PATHS)
+            sample=fastq_aligned_names(config, FASTQ_PATHS)
         )
     output: 'multiqc/bam_raw/multiqc.html'
     log: 'multiqc/bam_raw/multiqc.log'

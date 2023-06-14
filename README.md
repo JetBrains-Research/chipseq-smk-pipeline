@@ -48,11 +48,13 @@ $ source activate snakemake
 Launch
 ------
 
-Run the pipeline:
+Run the pipeline to start with fastq reads:
 
 ```bash
-$ snakemake all [--cores <cores>] --use-conda --directory <work_dir> --config genome=<genome> fastq_dir=<fastq_dir>
+$ snakemake all [--cores <cores>] --use-conda --directory <work_dir> fastq_dir=<fastq_dir> --config genome=<genome> 
 ```
+
+Use `start_with_bams=True` config option to start with existing bam files.
 
 P.S: Use `--config` to override default options from `./config.yaml` file
 

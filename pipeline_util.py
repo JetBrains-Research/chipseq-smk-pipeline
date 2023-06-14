@@ -15,9 +15,20 @@ def _fastq_paths(config):
     return list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext'])))
 
 
+def _bams_paths(bams_dir):
+    return list(glob(os.path.join(bams_dir, '*.bam')))
+
+
 def fastq_names_wo_ext(fastq_paths):
     # file name w/o ext and parent folders: supports *.fastq and *.fastq.gz
     return [_split_to_fname_and_ext(f)[0] for f in fastq_paths]
+
+
+def aligned_names(config, fastq_paths, bams_paths):
+    if not bool(config['start_with_bams']):
+        return fastq_aligned_names(config, fastq_paths)
+    # file name w/o ext and parent folders: supports *.fastq and *.fastq.gz
+    return [_split_to_fname_and_ext(f)[0] for f in bams_paths]
 
 
 def fastq_aligned_names(config, fastq_paths):
@@ -40,7 +51,7 @@ def _split_to_fname_and_ext(path):
         return name, dot_ext[1:]
 
 
-def _sample_by_fastq_file(config, fq_path):
+def _sample_by_file(config, fq_path):
     name = _split_to_fname_and_ext(fq_path)[0]
     if not bool(config['fastq_single_end_only']) and re.match('.*_R?[12]_?$', name):
         # paired file
@@ -119,13 +130,14 @@ def trimmed_fastq_sample_names(fastq_paths):
 # Control reads #
 #################
 
-def _sample_2_control(config, fastq_paths):
+def _sample_2_control(config, fastq_paths, bams_paths):
     result = {}
-    for fq_path in fastq_paths:
-        ext = _split_to_fname_and_ext(fq_path)[1]
-        control_path = find_control_for(fq_path, ext)
-        control_sample = _sample_by_fastq_file(config, control_path) if control_path else None
-        result[_sample_by_fastq_file(config, fq_path)] = control_sample
+    paths = fastq_paths if not bool(config['start_with_bams']) else bams_paths
+    for path in paths:
+        ext = _split_to_fname_and_ext(path)[1]
+        control_path = find_control_for(path, ext)
+        control_sample = _sample_by_file(config, control_path) if control_path else None
+        result[_sample_by_file(config, path)] = control_sample
     return result
 
 

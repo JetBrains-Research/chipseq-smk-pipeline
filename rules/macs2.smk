@@ -7,7 +7,7 @@ rule all_macs2_results:
     input:
         macs2_peaks=expand(
             f'macs2/{{sample}}_{config["macs2_suffix"]}_peaks.{config["macs2_mode"]}Peak',
-            sample=filter(lambda f: not is_control(f), fastq_aligned_names(config, FASTQ_PATHS))
+            sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         ) if bool(config['macs2']) else []
 
 def macs2_input_fun(wildcards):
