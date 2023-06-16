@@ -58,7 +58,7 @@ rule bowtie2_align_single:
             str(input.bowtie2_index_path),config['genome']
         ),
         extra=''
-    wrapper: "v2.0.0/bio/bowtie2/align"
+    wrapper: "0.36.0/bio/bowtie2/align"
 
 rule bowtie2_align_paired:
     input:
@@ -77,7 +77,7 @@ rule bowtie2_align_paired:
             str(input.bowtie2_index_path),config['genome']
         ),
         extra=config["bowtie2_params"]
-    wrapper: "v2.0.0/bio/bowtie2/align"
+    wrapper: "0.36.0/bio/bowtie2/align"
 
 # Aligned bams qc
 rule bam_raw_stats:
