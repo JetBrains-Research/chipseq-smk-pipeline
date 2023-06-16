@@ -58,7 +58,7 @@ rule bowtie2_align_single:
             str(input.bowtie2_index_path),config['genome']
         ),
         extra=''
-    wrapper: "0.36.0/bio/bowtie2/align"
+    wrapper: "v2.0.0/bio/bowtie2/align"
 
 rule bowtie2_align_paired:
     input:
@@ -77,14 +77,14 @@ rule bowtie2_align_paired:
             str(input.bowtie2_index_path),config['genome']
         ),
         extra=config["bowtie2_params"]
-    wrapper: "0.36.0/bio/bowtie2/align"
+    wrapper: "v2.0.0/bio/bowtie2/align"
 
 # Aligned bams qc
 rule bam_raw_stats:
     input: 'bams/{sample}.bam.raw'
     output: 'qc/bam_raw/samtools_stats/{sample}.txt'
     log: 'logs/bam_raw/samtools_stats/{sample}.log'
-    wrapper: '0.36.0/bio/samtools/stats'
+    wrapper: 'v2.0.0/bio/samtools/stats'
 
 rule bam_raw_multiqc:
     input:
@@ -98,7 +98,7 @@ rule bam_raw_multiqc:
         )
     output: 'multiqc/bam_raw/multiqc.html'
     log: 'multiqc/bam_raw/multiqc.log'
-    wrapper: '0.36.0/bio/multiqc'
+    wrapper: 'v2.0.0/bio/multiqc'
 
 # Filter aligned reads with good mapping score: (remove not aligned and bad mapped)
 rule filter_sort_bam_single:

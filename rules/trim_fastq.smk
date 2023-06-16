@@ -23,7 +23,6 @@ rule trim_single_fastq:
     # params:
     #     extra = "--cores {threads}" # "--illumina -q 20"
     # wrapper: '0.36.0/bio/trim_galore/se' # only 0.4.3 trim galore version
-    conda: '../envs/bio.env.yaml'
     params:
         extra=lambda wildcards, threads: f"--gzip --cores {threads}",  # "--illumina -q 20"
         out_dir="trimmed"
@@ -75,7 +74,7 @@ rule trimmed_fastqc:
         time=60 * 120
 
     # https://bitbucket.org/snakemake/snakemake-wrappers/src/0.31.1/bio/fastqc/
-    wrapper: '0.36.0/bio/fastqc'
+    wrapper: 'v2.0.0/bio/fastqc'
 
 
 rule multiqc_trimmed_fastq:
@@ -91,4 +90,4 @@ rule multiqc_trimmed_fastq:
 
     output: 'multiqc/trimmed/multiqc.html'
     log: 'multiqc/trimmed/multiqc.log'
-    wrapper: '0.36.0/bio/multiqc'
+    wrapper: 'v2.0.0/bio/multiqc'
