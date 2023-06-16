@@ -68,14 +68,14 @@ rule all:
         *([] if bool(config['start_with_bams']) else [
             # Reads qc
             rules.all_raw_qc_results.input,
-            # Optional reads trimming, this option is controlled by setting: config[trim_reads]
+            # Optional reads trimming
             *([] if not bool(config['trim_reads']) else rules.all_trim_fastq_results.input),
             # Alignment
             rules.all_alignment_results.input,
             # Alignment qc
             rules.all_alignment_qc.input,
-            # Optional: Quality metrics
-            rules.all_bam_quality_metrics_results.input,
+            # Optional: Advanced BAM quality metrics
+            *([] if not bool(config['bams_additional_qc']) else rules.all_bam_quality_metrics_results.input)
         ]),
         # Visualization
         rules.all_reads_coverage_results.input,

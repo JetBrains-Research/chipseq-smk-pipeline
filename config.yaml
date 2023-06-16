@@ -18,6 +18,9 @@ genome: hg38
 bowtie2_params: ""
 #bowtie2_params: "-X 2000 --dovetail"
 
+# Compute NRF, PBC for BAM alignment
+bams_additional_qc: False
+
 # Option if all will start with bams
 start_with_bams: False
 
