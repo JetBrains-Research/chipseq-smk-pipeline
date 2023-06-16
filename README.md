@@ -74,7 +74,8 @@ Launch
 Run the pipeline to start with fastq reads:
 
 ```bash
-$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile all [--cores <cores>] --use-conda --directory <work_dir> \
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all [--cores <cores>] --use-conda --directory <work_dir> \
     --config fastq_dir=<fastq_dir> genome=<genome> --rerun-incomplete
 ```
 
@@ -84,7 +85,8 @@ Please add `macs2=True`, `sicer=True`, `span=True` to call peaks with MACS2, SIC
 To launch MACS2 in `--broad` mode, use the following config:
 
 ```bash
-$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile all [--cores <cores>] --use-conda --directory <work_dir> \
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all [--cores <cores>] --use-conda --directory <work_dir> \
     --config fastq_dir=<fastq_dir> genome=<genome> \
     macs2=True macs2_mode=broad macs2_params="--broad --broad-cutoff 0.1" macs2_suffix=broad0.1 \
     --rerun-incomplete
@@ -107,8 +109,8 @@ Example of ATAC-Seq processing on qsub
 
 ```bash
 $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
-    all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
-    --directory <work_dir> \
+    all --use-conda --directory <work_dir> \
+    --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
     --config fastq_dir=<fastq_dir> genome=<genome> \
     macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
     span=True span_params="--fragment 0" bowtie2_params="-X 2000 --dovetail"  --rerun-incomplete
@@ -120,22 +122,17 @@ Try with test data
 ------------------
 
 Please download example `fastq.gz` files
-from [CD14_chr15_fastq](https://artyomovlab.wustl.edu/publications/supp_materials/4Oleg/CD14_chr15_fastq/) folder.
+from [CD14_chr15_fastq](https://artyomovlab.wustl.edu/publications/supp_materials/4Oleg/CD14_chr15_fastq/) folder.<br>
 These files are filtered on human chr15 to reduce size and make computations faster.
 
 Launch `chipseq-smk-pipeline`:
 
 ```bash
-$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile all --use-conda --cores all  --directory <work_dir> \
-    --config fastq_ext=fastq.gz fastq_dir=<work_dir> genome=hg38 macs2=True sicer=True span=True --rerun-incomplete
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all --use-conda --cores all --directory <work_dir> \
+    --config fastq_ext=fastq.gz fastq_dir=<work_dir> genome=hg38 macs2=True sicer=True span=True \
+    --rerun-incomplete
 ```
-
-SnakeCharm
-----------
-
-ChIP-Seq processing pipeline - [snakemake](https://snakemake.readthedocs.io/en/stable/) version
-of [washu](https://github.com/JetBrains-Research/washu) pipeline.\
-
 
 Useful links
 ------------
