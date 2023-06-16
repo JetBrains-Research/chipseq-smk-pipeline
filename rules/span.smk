@@ -45,7 +45,7 @@ rule call_peaks_span:
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
         threads = 4,
-        mem = 16, mem_ram = 12,
+        mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
