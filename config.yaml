@@ -24,16 +24,14 @@ start_with_bams: False
 # ======================== MACS2 ========================
 macs2: False
 # MACS2 Narrow:
-#macs2_mode: narrow
-#macs2_params: "-q 0.05"
-#macs2_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
+macs2_mode: narrow
+macs2_params: "-q 0.05"
+macs2_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
 
 # MACS2 Broad
-#  use 0.1 or 0.5 cutoff
-#  params example: "--broad --broad-cutoff 0.1"
-macs2_mode: broad
-macs2_params: "--broad --broad-cutoff 0.1"
-macs2_suffix: broad0.1 # do not use underscores here otherwise wrong sample wildcards
+#macs2_mode: broad
+#macs2_params: "--broad --broad-cutoff 0.1"
+#macs2_suffix: broad0.1 # do not use underscores here otherwise wrong sample wildcards
 
 # MACS2 ATAC-seq:
 #macs2_mode: narrow

@@ -5,11 +5,28 @@
 [Snakemake](https://snakemake.readthedocs.io/en/stable/) based pipeline for ChIP-seq and ATAC-seq datasets processing
 from raw data QC and alignment to visualization and peak calling.
 
-Pipeline
---------
-Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`.
-Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property.
+![Scheme](pipeline.png?raw=true "Pipeline")
+
+*During peak calling steps `chipseq-smk-pipeline` automatically matches signal with control file by names proximity.*
+
+
+Input
+-----
+**Input FASTQ files**
+
+Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`.<br>
+Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property.<br>
 FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
+
+
+**Input BAM files**
+
+Use `start_with_bams=True` config option to start with existing bam files.<br>
+Pipeline starts with `BAM` files in `work_dir/bams` folder.
+
+
+Files
+-----
 
 | Path          | Description                                                                          |
 |---------------|--------------------------------------------------------------------------------------|
@@ -24,9 +41,9 @@ FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `f
 | `multiqc`     | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps |
 | `logs`        | Shell commands logs                                                                  |
 
-Configuration
--------------
-The only tool required to launch the pipeline is `conda`.
+Requirements
+------------
+The pipeline requires `conda`.
 
 * If `conda` is not installed,
   follow the instructions at
@@ -45,18 +62,35 @@ Activate the newly created environment:
 $ source activate snakemake
 ```
 
+On Ubuntu please ensure that `gawk` is installed:
+
+```bash
+$ sudo apt-get install gawk
+```
+
 Launch
 ------
 
 Run the pipeline to start with fastq reads:
 
 ```bash
-$ snakemake all [--cores <cores>] --use-conda --directory <work_dir> --config fastq_dir=<fastq_dir> genome=<genome> 
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile all [--cores <cores>] --use-conda --directory <work_dir> \
+    --config fastq_dir=<fastq_dir> genome=<genome> --rerun-incomplete
 ```
 
-Use `start_with_bams=True` config option to start with existing bam files.
+Default pipeline doesn't launch peak callers. 
+Please add `macs2=True`, `sicer=True`, `span=True` to call peaks with MACS2, SICER or SPAN. 
 
-P.S: Use `--config` to override default options from `config.yaml` file
+To launch MACS2 in `--broad` mode, use the following config:
+
+```bash
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile all [--cores <cores>] --use-conda --directory <work_dir> \
+    --config fastq_dir=<fastq_dir> genome=<genome> \
+    macs2=True macs2_mode=broad macs2_params="--broad --broad-cutoff 0.1" macs2_suffix=broad0.1 \
+    --rerun-incomplete
+```
+
+See `config.yaml` for complete list of parameters. Use`--config` to override default options from `config.yaml` file.
 
 QSUB
 ----
@@ -72,27 +106,39 @@ $ cookiecutter https://github.com/iromeo/generic.git
 Example of ATAC-Seq processing on qsub
 
 ```bash
-$ snakemake all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all --use-conda --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
     --directory <work_dir> \
     --config fastq_dir=<fastq_dir> genome=<genome> \
     macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
-    span=True span_params="--fragment 0" bin=100 bowtie2_params="-X 2000 --dovetail"
+    span=True span_params="--fragment 0" bowtie2_params="-X 2000 --dovetail"  --rerun-incomplete
 ```
 
 P.S: Use `--config` to override default options from `config.yaml` file
+
+Try with test data
+------------------
+
+Please download example `fastq.gz` files
+from [CD14_chr15_fastq](https://artyomovlab.wustl.edu/publications/supp_materials/4Oleg/CD14_chr15_fastq/) folder.
+These files are filtered on human chr15 to reduce size and make computations faster.
+
+Launch `chipseq-smk-pipeline`:
+
+```bash
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile all --use-conda --cores all  --directory <work_dir> \
+    --config fastq_ext=fastq.gz fastq_dir=<work_dir> genome=hg38 macs2=True sicer=True span=True --rerun-incomplete
+```
 
 SnakeCharm
 ----------
 
 ChIP-Seq processing pipeline - [snakemake](https://snakemake.readthedocs.io/en/stable/) version
 of [washu](https://github.com/JetBrains-Research/washu) pipeline.\
-Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
-for [PyCharm](https://www.jetbrains.com/pycharm/) IDE.
+
 
 Useful links
 ------------
-
-* [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
-* [PyCharm](https://www.jetbrains.com/pycharm/) IDE
-* [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system
-* JetBrains Research BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
+* Learn more about [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system
+* Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
+  for [PyCharm](https://www.jetbrains.com/pycharm/) IDE by JetBrains Research [BioLabs](https://research.jetbrains.org/groups/biolabs)

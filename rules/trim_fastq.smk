@@ -14,7 +14,6 @@ rule trim_single_fastq:
         "trimmed/{sample}_trimmed.fq.gz",
         f"trimmed/{{sample}}.{config['fastq_ext']}_trimming_report.txt"
     log: 'logs/trimmed/{sample}.log'
-
     threads: 4
     resources:
         threads=4,
@@ -70,7 +69,6 @@ rule trimmed_fastqc:
         zip='qc/trimmed/fastqc/{any}_fastqc.zip'
     log: 'logs/trimmed/fastqc/{any}.log'
     wildcard_constraints: any="[^/]+"
-
     resources:
         threads=1,
         mem=8, mem_ram=4,
@@ -93,5 +91,4 @@ rule multiqc_trimmed_fastq:
 
     output: 'multiqc/trimmed/multiqc.html'
     log: 'multiqc/trimmed/multiqc.log'
-
     wrapper: '0.36.0/bio/multiqc'

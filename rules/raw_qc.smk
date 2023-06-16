@@ -13,7 +13,6 @@ rule fastqc:
           html='qc/fastqc/{sample}_fastqc.html',
           zip='qc/fastqc/{sample}_fastqc.zip'
     log: 'logs/fastqc/{sample}.log'
-
     resources:
         threads = 1,
         mem = 8, mem_ram = 4,
@@ -24,5 +23,4 @@ rule multiqc_fastq:
     input: expand('qc/fastqc/{sample}_fastqc.zip', sample=fastq_names_wo_ext(FASTQ_PATHS))
     output: 'multiqc/fastqc/multiqc.html'
     log: 'multiqc/fastqc/multiqc.log'
-
     wrapper: '0.36.0/bio/multiqc'

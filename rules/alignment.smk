@@ -6,7 +6,7 @@ localrules: download_chrom_sizes,download_fa,all_alignment_results,all_alignment
 ######## Step: Alignment & QC ##################
 rule all_alignment_results:
     input:
-        bams=expand("bams/{sample}.bam",sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
+        bams=expand("bams/{sample}.bam", sample=aligned_names(config,FASTQ_PATHS,BAMS_PATHS))
 
 rule all_alignment_qc:
     input:
@@ -16,14 +16,12 @@ rule all_alignment_qc:
 rule download_chrom_sizes:
     output: f"{config['genome']}.chrom.sizes"
     log: f"logs/{config['genome']}.chrom.sizes.log"
-
     shell:
         'wget -O {output} http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes &> {log}'
 
 rule download_fa:
     output: directory('fa')
     log: 'logs/fa.log'
-
     shell:
         "rsync -avz --partial --exclude='*.txt' "  # To include single chromosome use: "rsync -avz --partial  --include='chr15*' --exclude='*' "
         'rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} &> {log}'
@@ -32,7 +30,6 @@ rule bowtie2_index:
     input: 'fa'
     output: directory('bowtie2-index')
     log: 'logs/bam_raw/bowtie2/bowtie2-index.log'
-
     conda: '../envs/bio.env.yaml'
     threads: 8
     resources:
@@ -51,7 +48,6 @@ rule bowtie2_align_single:
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
-
     threads: 8
     resources:
         threads=8,
@@ -70,7 +66,6 @@ rule bowtie2_align_paired:
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp("bams/{sample}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
-
     threads: 8
     resources:
         threads=8,
@@ -110,7 +105,6 @@ rule filter_sort_bam_single:
     input: '{anywhere}/{sample}.bam.raw'
     output: '{anywhere}/{sample}.bam'
     log: 'logs/bam_filtered/{anywhere}/{sample}.log'
-
     conda: '../envs/bio.env.yaml'
     threads: 4
     resources:

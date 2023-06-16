@@ -11,7 +11,8 @@ rule index_bams:
     input: '{anywhere}/{sample}.bam'
     output: '{anywhere}/{sample}.bam.bai'
     log: 'logs/bams_index/{anywhere}/{sample}.bam.bai.log'
-    wrapper: '0.36.0/bio/samtools/index'
+    conda: '../envs/bio.env.yaml'
+    shell: 'samtools index {input} {output} &>> {log}'
 
 rule bam2bw:
     input:
@@ -19,11 +20,10 @@ rule bam2bw:
          bai='bams/{filename}.bam.bai'
     output: 'bw/{filename, [^/]*}.bw'
     log: 'logs/bw/{filename}.log'
-
     conda: '../envs/deeptools.env.yaml'
     threads: 4
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 120
-    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output}'
+    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output} &>> {log}'

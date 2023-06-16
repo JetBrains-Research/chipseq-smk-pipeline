@@ -33,7 +33,6 @@ rule all_sicer_results:
 rule bam_to_pileup:
     input: 'bams/{sample}.bam'
     output: temp('bams/pileup/{sample}.bed')
-
     conda: '../envs/bio.env.yaml'
     shell: 'bedtools bamtobed -i {input} > {output}'
 
@@ -72,7 +71,6 @@ rule call_peaks_sicer:
     input: unpack(sicer_input_fun)
     output: 'sicer/{sample}-W{width}-G{gap, \d+}-{any_suffix}'
     log: 'logs/sicer/{sample}-W{width}-G{gap}-{any_suffix}.log'
-
     conda: '../envs/py27.env.yaml'
     shadow: "shallow"
     params:

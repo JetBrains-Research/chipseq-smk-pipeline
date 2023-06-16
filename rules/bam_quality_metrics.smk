@@ -12,7 +12,6 @@ rule all_bam_quality_metrics_results:
 rule download_phantompeakqualtools:
     output: directory('bin/phantompeakqualtools')
     log: 'logs/phantompeakqualtools.log'
-
     conda: "../envs/phantom.env.yaml"
     params:
           targz='phantompeakqualtools.tar.gz'
@@ -27,7 +26,6 @@ rule download_phantompeakqualtools:
 rule install_spp:
     output: touch('flags/spp.installed')
     log: 'logs/spp/installation.log'
-
     conda: "../envs/phantom.env.yaml"
     script: "../scripts/spp_install.R"
 
@@ -42,17 +40,15 @@ rule bam_qc_phantom:
         tsv='qc/phantom/{sample}.phantom.tsv',
         pdf='qc/phantom/{sample}.pdf',
     log: 'logs/phantom/{sample}.phantom.tsv'
-
     conda: "../envs/phantom.env.yaml"
     params:
           run_spp=lambda wildcards, input: os.path.join(str(input.ppqt_dir), 'run_spp.R')
-
     shell:
         # > awk: line 2: function and never defined
         # on Ubuntu also gawk required: sudo apt-get install gawk
         # 'Rscript {params.run_spp} -c={input.bam} -savp -out={output.tsv} -rf'
         'Rscript --default-packages=utils,stats,grDevices,caTools,graphics {params.run_spp}'
-        ' -c={input.bam} -savp -out={output.tsv} -odir=qc/phantom -rf'
+        ' -c={input.bam} -savp -out={output.tsv} -odir=qc/phantom -rf &>> {log}'
 
 rule bam_qc_pbc_nrf:
     input: 'bams/pileup/{sample}.bed'
