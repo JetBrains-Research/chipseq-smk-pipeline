@@ -123,14 +123,14 @@ Try with test data
 
 Please download example `fastq.gz` files
 from [CD14_chr15_fastq](https://artyomovlab.wustl.edu/publications/supp_materials/4Oleg/CD14_chr15_fastq/) folder.<br>
-These files are filtered on human chr15 to reduce size and make computations faster.
+These files are filtered on human hg19 chr15 to reduce size and make computations faster.
 
 Launch `chipseq-smk-pipeline`:
 
 ```bash
 $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     all --use-conda --cores all --directory <work_dir> \
-    --config fastq_ext=fastq.gz fastq_dir=<work_dir> genome=hg38 macs2=True sicer=True span=True \
+    --config fastq_ext=fastq.gz fastq_dir=<work_dir> genome=hg19 macs2=True sicer=True span=True \
     --rerun-incomplete
 ```
 
