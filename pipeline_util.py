@@ -11,6 +11,10 @@ def is_control(c):
     return re.match('.*(input|control|wce).*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
 
 
+def control_not_required(c):
+    return re.match('.*(atac|dnase|dhs).*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
+
+
 def _fastq_paths(config):
     return list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext'])))
 
@@ -142,8 +146,8 @@ def _sample_2_control(config, fastq_paths, bams_paths):
 
 
 def find_control_for(file, ext="bam"):
-    if is_control(file):
-        return ''
+    if is_control(file) or control_not_required(file):
+        return None
     # Find all the files within folder
     controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if is_control(n)]
     return _lcs_or_parts(os.path.basename(file), controls)
