@@ -19,8 +19,8 @@ def span_input_fun(wildcards):
     sample = wildcards.sample
 
     control_args = {}
-    control_sample = SAMPLE_2_CONTROL_MAP[sample]
-    if control_sample:
+    if sample in SAMPLE_2_CONTROL_MAP:
+        control_sample = SAMPLE_2_CONTROL_MAP[sample]
         control_args['control'] = f'bams/{control_sample}.bam'
 
     return dict(
