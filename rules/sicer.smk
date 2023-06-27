@@ -15,7 +15,7 @@ def sicer_all_peaks_input():
     # config, not via wildcards
 
     for sample in filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS)):
-        if SAMPLE_2_CONTROL_MAP[sample] is None:
+        if sample not in SAMPLE_2_CONTROL_MAP:
             # w/o control
             significance = config['sicer_evalue']
             files.append(f'sicer/{sample}-W{window_size}-G{gap}-E{significance}.scoreisland')
