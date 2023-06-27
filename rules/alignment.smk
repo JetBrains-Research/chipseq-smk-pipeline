@@ -102,7 +102,7 @@ rule bam_raw_multiqc:
 
 # Filter aligned reads with good mapping score: (remove not aligned and bad mapped)
 rule filter_sort_bam_single:
-    input: '{anywhere}/{sample}.bam.raw'
+    input: '{anywhere}/{sample}.bam.raw' if not bool(config['start_with_bams']) else 'non-existing-file'
     output: '{anywhere}/{sample}.bam'
     log: 'logs/bam_filtered/{anywhere}/{sample}.log'
     conda: '../envs/bio.env.yaml'
