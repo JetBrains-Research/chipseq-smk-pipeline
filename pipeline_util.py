@@ -141,7 +141,8 @@ def _sample_2_control(config, fastq_paths, bams_paths):
         ext = _split_to_fname_and_ext(path)[1]
         control_path = find_control_for(path, ext)
         control_sample = _sample_by_file(config, control_path) if control_path else None
-        result[_sample_by_file(config, path)] = control_sample
+        if control_sample is not None:
+            result[_sample_by_file(config, path)] = control_sample
     return result
 
 
