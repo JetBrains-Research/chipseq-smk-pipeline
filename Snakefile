@@ -32,9 +32,9 @@ onstart:
     shell('echo "  SNAKEMAKE VERSION: $(snakemake --version)"')
 
     if bool(config['start_with_bams']):
-        print("Bam folder:", BAMS_DIR)
+        print("Bam directory:", BAMS_DIR)
     else:
-        print("Fastq folder:", config['fastq_dir'])
+        print("Fastq directory:", config['fastq_dir'])
 
     #---------------------------------------------------------------------
     # Let's create symlinks for several pipeline source dirs to simplify
@@ -60,8 +60,13 @@ wildcard_constraints:
 
 localrules: all
 
-if not os.path.exists(config['fastq_dir']):
-    raise ValueError(f"Reads directory not exists: {config['fastq_dir']}")
+if bool(config['start_with_bams']):
+    if not os.path.exists(config['bams_dir']):
+        raise ValueError(f"Bam directory not exists: {config['fastq_dir']}")
+else:
+    if not os.path.exists(config['fastq_dir']):
+        raise ValueError(f"Fastq directory not exists: {config['fastq_dir']}")
+
 
 rule all:
     input:
