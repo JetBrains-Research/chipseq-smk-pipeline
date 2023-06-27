@@ -21,10 +21,10 @@ def span_input_fun(wildcards):
     control_args = {}
     if sample in SAMPLE_2_CONTROL_MAP:
         control_sample = SAMPLE_2_CONTROL_MAP[sample]
-        control_args['control'] = f'bams/{control_sample}.bam'
+        control_args['control'] = f"{config['bams_dir']}/{control_sample}.bam"
 
     return dict(
-        signal=f'bams/{sample}.bam',
+        signal=f"{config['bams_dir']}/{sample}.bam",
         **control_args,
         span=rules.download_span.output,
         chrom_sizes=rules.download_chrom_sizes.output,

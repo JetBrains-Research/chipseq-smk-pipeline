@@ -1,5 +1,8 @@
-# ======================== FASTQ READS ========================
+# ======================== INPUT DIRECTORIES ==================
 fastq_dir: fastq
+bams_dir: bams
+
+# ======================== FASTQ READS ========================
 
 # FASTQ file extension: "fastq.gz" or "fastq" or "fq.gz" or "fq", etc.
 fastq_ext: "fastq.gz"

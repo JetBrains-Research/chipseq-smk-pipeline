@@ -31,8 +31,8 @@ rule all_sicer_results:
 
 
 rule bam_to_pileup:
-    input: 'bams/{sample}.bam'
-    output: temp('bams/pileup/{sample}.bed')
+    input: f"{config['bams_dir']}/{{sample}}.bam"
+    output: temp(f"{config['bams_dir']}/pileup/{{sample}}.bed")
     conda: '../envs/bio.env.yaml'
     shell: 'bedtools bamtobed -i {input} > {output}'
 
@@ -56,11 +56,10 @@ def sicer_input_fun(wildcards):
     control_args = {}
     if sample in SAMPLE_2_CONTROL_MAP:
         control_sample = SAMPLE_2_CONTROL_MAP[sample]
-        control_args['control_pileup'] = f'bams/pileup/{control_sample}.bed'
+        control_args['control_pileup'] = f"{config['bams_dir']}/pileup/{control_sample}.bed"
 
     return dict(
-        # pileup_bed='bams/pileup/{sample}.bed',
-        signal_pileup = f'bams/pileup/{sample}.bed',
+        signal_pileup = f"{config['bams_dir']}/pileup/{{sample}}.bed",
         **control_args,
         chrom_sizes=rules.download_chrom_sizes.output,
         effective_genome_fraction=rules.pileup_bed_effective_genome_fraction.output,

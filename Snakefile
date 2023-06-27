@@ -8,7 +8,7 @@ configfile: f"{workflow.basedir}/config.yaml"
 
 WORK_DIR = os.getcwd()
 FASTQ_PATHS = _fastq_paths(config)
-BAMS_DIR = os.path.join(WORK_DIR, 'bams')
+BAMS_DIR = os.path.join(WORK_DIR, config['bams_dir'])
 BAMS_PATHS = _bams_paths(BAMS_DIR)
 SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS, BAMS_PATHS)
 
@@ -32,9 +32,9 @@ onstart:
     shell('echo "  SNAKEMAKE VERSION: $(snakemake --version)"')
 
     if bool(config['start_with_bams']):
-        print("BAM Dir:", BAMS_DIR)
+        print("Bam folder:", BAMS_DIR)
     else:
-        print("FastQ Reads:", config['fastq_dir'])
+        print("Fastq folder:", config['fastq_dir'])
 
     #---------------------------------------------------------------------
     # Let's create symlinks for several pipeline source dirs to simplify
@@ -74,7 +74,7 @@ rule all:
             rules.all_alignment_results.input,
             # Alignment qc
             rules.all_alignment_qc.input,
-            # Optional: Advanced BAM quality metrics
+            # Optional advanced BAM quality metrics
             *([] if not bool(config['bams_additional_qc']) else rules.all_bam_quality_metrics_results.input)
         ]),
         # Visualization

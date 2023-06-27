@@ -16,8 +16,8 @@ rule index_bams:
 
 rule bam2bw:
     input:
-         bam='bams/{filename}.bam',
-         bai='bams/{filename}.bam.bai'
+         bam=f"{config['bams_dir']}/{{filename}}.bam",
+         bai=f"{config['bams_dir']}/{{filename}}.bam.bai"
     output: 'bw/{filename, [^/]*}.bw'
     log: 'logs/bw/{filename}.log'
     conda: '../envs/deeptools.env.yaml'

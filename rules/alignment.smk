@@ -6,7 +6,7 @@ localrules: download_chrom_sizes,download_fa,all_alignment_results,all_alignment
 ######## Step: Alignment & QC ##################
 rule all_alignment_results:
     input:
-        bams=expand("bams/{sample}.bam", sample=aligned_names(config,FASTQ_PATHS,BAMS_PATHS))
+        bams=expand(f"{config['bams_dir']}/{{sample}}.bam", sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
 
 rule all_alignment_qc:
     input:
@@ -46,7 +46,7 @@ rule bowtie2_align_single:
     input:
         sample=bowtie2_input_paths(config,False),
         bowtie2_index_path=rules.bowtie2_index.output
-    output: temp("bams/{sample}.bam.raw")
+    output: temp(f"{config['bams_dir']}/{{sample}}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
     threads: 8
     resources:
@@ -64,7 +64,7 @@ rule bowtie2_align_paired:
     input:
         sample=bowtie2_input_paths(config,True),
         bowtie2_index_path=rules.bowtie2_index.output
-    output: temp("bams/{sample}.bam.raw")
+    output: temp(f"{config['bams_dir']}/{{sample}}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
     threads: 8
     resources:
@@ -81,7 +81,7 @@ rule bowtie2_align_paired:
 
 # Aligned bams qc
 rule bam_raw_stats:
-    input: 'bams/{sample}.bam.raw'
+    input: f"{config['bams_dir']}/{{sample}}.bam.raw"
     output: 'qc/bam_raw/samtools_stats/{sample}.txt'
     log: 'logs/bam_raw/samtools_stats/{sample}.log'
     wrapper: 'v2.0.0/bio/samtools/stats'

@@ -35,7 +35,7 @@ rule bam_qc_phantom:
     input:
          ppqt_dir=rules.download_phantompeakqualtools.output,
          spp_flag=rules.install_spp.output,
-         bam='bams/{sample}.bam'
+         bam=f"{config['bams_dir']}/{{sample}}.bam"
     output:
         tsv='qc/phantom/{sample}.phantom.tsv',
         pdf='qc/phantom/{sample}.pdf',
@@ -51,7 +51,7 @@ rule bam_qc_phantom:
         ' -c={input.bam} -savp -out={output.tsv} -odir=qc/phantom -rf &>> {log}'
 
 rule bam_qc_pbc_nrf:
-    input: 'bams/pileup/{sample}.bed'
+    input: f"{config['bams_dir']}/pileup/{{sample}}.bed"
     output: 'qc/pbc_nrf/{sample}.pbc_nrf.tsv'
     params:
           tmp_dir='tmp'
