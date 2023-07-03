@@ -27,6 +27,11 @@ bams_additional_qc: False
 # Option if all will start with bams
 start_with_bams: False
 
+# ======================== Visualization ================
+
+# Produce normalized coverage ignoring duplicated reads
+bamCoverage_params: "--normalizeUsing CPM --ignoreDuplicates"
+
 # ======================== MACS2 ========================
 macs2: False
 # MACS2 Narrow:

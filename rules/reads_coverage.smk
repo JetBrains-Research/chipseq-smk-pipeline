@@ -22,8 +22,10 @@ rule bam2bw:
     log: 'logs/bw/{filename}.log'
     conda: '../envs/deeptools.env.yaml'
     threads: 4
+    params:
+        bamCoverage_params=config['bamCoverage_params'],
     resources:
         threads = 4,
         mem = 16, mem_ram = 12,
         time = 60 * 120
-    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output} &>> {log}'
+    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output} {params.bamCoverage_params} &>> {log}'
