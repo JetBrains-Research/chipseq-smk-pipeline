@@ -89,15 +89,15 @@ def _paired_fastq_samples_names(config, fastq_paths):
 
 def _get_paired_suffixes(config):
     # we assume that all the files share similar naming
-    suffix1, suffix2 = '_1', '_2'
-    for f in list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext']))):
+    for f in sorted(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext']))):
         name = _split_to_fname_and_ext(f)[0]
-        if re.match('.*_R?[12]_?$', name):
-            sample = re.sub('_R?[12]_?$', '', name)
+        if re.match('.*_R?1_?$', name):
+            sample = re.sub('_R?1_?$', '', name)
             suffix1 = name.replace(sample, '')
             suffix2 = suffix1.replace('1', '2')
-            break
-    return suffix1, suffix2
+            if suffix1 and suffix2 and suffix1 != suffix2 and os.path.exists(f.replace(suffix1, suffix2)):
+                return suffix1, suffix2
+    return '_1', '_2'
 
 
 def bowtie2_input_paths(config, paired):
