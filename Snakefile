@@ -7,8 +7,9 @@ from pipeline_util import _fastq_paths, _bams_paths, _sample_2_control
 configfile: f"{workflow.basedir}/config.yaml"
 
 WORK_DIR = os.getcwd()
-FASTQ_PATHS = _fastq_paths(config)
-BAMS_DIR = os.path.join(WORK_DIR, config['bams_dir'])
+FASTQ_DIR = config['fastq_dir']
+FASTQ_PATHS = _fastq_paths(FASTQ_DIR)
+BAMS_DIR = config['bams_dir']
 BAMS_PATHS = _bams_paths(BAMS_DIR)
 SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS, BAMS_PATHS)
 
@@ -34,7 +35,7 @@ onstart:
     if bool(config['start_with_bams']):
         print("Bam directory:", BAMS_DIR)
     else:
-        print("Fastq directory:", config['fastq_dir'])
+        print("Fastq directory:", FASTQ_DIR)
 
     #---------------------------------------------------------------------
     # Let's create symlinks for several pipeline source dirs to simplify
