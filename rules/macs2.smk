@@ -36,6 +36,6 @@ rule call_peaks_macs2:
         outdir=lambda wildcards, output: os.path.dirname(str(output[0])),
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     shell:
-        'macs2 callpeak -t {input.signal} {params.control_arg} --outdir {params.outdir} ' 
+        'macs2 callpeak -f BAM -t {input.signal} {params.control_arg} --outdir {params.outdir} ' 
         '-n {wildcards.sample}_{params.macs2_suffix} -g {params.species} ' 
         '{params.macs2_params} &> {log} || true; if [[ ! -f {output} ]]; then touch {output}; fi;'
