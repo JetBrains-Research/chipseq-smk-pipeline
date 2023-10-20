@@ -1,3 +1,4 @@
+import os
 from pipeline_util import *
 
 localrules: all_sicer_results
@@ -13,16 +14,22 @@ def sicer_all_peaks_input():
 
     # XXX: change significance only via config, SICER rule takes the value from
     # config, not via wildcards
-
+    # IMPORTANT
+    # We explicitly check presence of output files, otherwise missing intermediate tmp files
+    # are causing even existing files re-computations.
     for sample in filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS)):
         if sample not in SAMPLE_2_CONTROL_MAP:
             # w/o control
             significance = config['sicer_evalue']
-            files.append(f'sicer/{sample}-W{window_size}-G{gap}-E{significance}.scoreisland')
+            no_control_file = f'sicer/{sample}-W{window_size}-G{gap}-E{significance}.scoreisland'
+            if not os.path.exists(f'{WORK_DIR}/{no_control_file}'):  # Workaround for intermediate tmp
+                files.append(no_control_file)
         else:
             # with control
             significance = config['sicer_fdr']
-            files.append(f'sicer/{sample}-W{window_size}-G{gap}-islands-summary-FDR{significance}')
+            with_control_file = f'sicer/{sample}-W{window_size}-G{gap}-islands-summary-FDR{significance}'
+            if not os.path.exists(f'{WORK_DIR}/{with_control_file}'):  # Workaround for intermediate tmp
+                files.append(with_control_file)
 
     return files
 
