@@ -91,7 +91,7 @@ rule call_peaks_sicer:
         genome=config['genome'],
         script=lambda wildcards, input: "SICER.sh" if input.get('control_pileup', None) else "SICER-rb.sh"
     resources:
-        threads = 4,
+        threads = 1,
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
