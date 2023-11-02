@@ -8,7 +8,8 @@ configfile: f"{workflow.basedir}/config.yaml"
 
 WORK_DIR = os.getcwd()
 FASTQ_DIR = config['fastq_dir']
-FASTQ_PATHS = _fastq_paths(FASTQ_DIR)
+FASTQ_EXT = config['fastq_ext']
+FASTQ_PATHS = _fastq_paths(FASTQ_DIR, FASTQ_EXT)
 BAMS_DIR = config['bams_dir']
 BAMS_PATHS = _bams_paths(BAMS_DIR)
 SAMPLE_2_CONTROL_MAP = _sample_2_control(config, FASTQ_PATHS, BAMS_PATHS)
@@ -36,6 +37,7 @@ onstart:
         print("Bam directory:", BAMS_DIR)
     else:
         print("Fastq directory:", FASTQ_DIR)
+        print("Fastq extension:", FASTQ_EXT)
 
     #---------------------------------------------------------------------
     # Let's create symlinks for several pipeline source dirs to simplify

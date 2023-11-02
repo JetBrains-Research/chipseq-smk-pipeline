@@ -15,8 +15,8 @@ def control_not_required(c):
     return re.match('.*(atac|dnase|dhs).*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
 
 
-def _fastq_paths(config):
-    return list(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext'])))
+def _fastq_paths(fastq_dir, fastq_ext):
+    return list(glob(os.path.join(fastq_dir, f'*.{fastq_ext}')))
 
 
 def _bams_paths(bams_dir):
