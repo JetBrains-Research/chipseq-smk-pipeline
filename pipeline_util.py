@@ -151,20 +151,27 @@ def find_control_for(file, ext="bam"):
         return None
     # Find all the files within folder
     controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if is_control(n)]
-    return _lcs_or_parts(os.path.basename(file), controls)
+    return find_matching_control(os.path.basename(file), controls)
 
 
-def _lcs_or_parts(bam_name, controls):
+def find_matching_control(bam_name, controls):
     if len(controls) == 0:
         return ''
     # Compute lcs for _ and - separated names, otherwise compute for all symbols
-    lcs_parts = [_lcs(re.split('[\-_\s\.]+', str(bam_name.lower())),
-                      re.split('[\-_\s\.]+', x.lower())) for x in controls]
-    cps = [i for i in range(len(lcs_parts)) if lcs_parts[i] == max(lcs_parts)]
-    if len(cps) == 1:
-        return controls[cps[0]]
+    parts_bam = re.split('[\\/\-_\s\.]+', str(bam_name.lower()))
+    parts_controls = [re.split('[\\/\-_\s\.]+', c.lower()) for c in controls]
+    match_parts = [_lcs(parts_bam, pc) for pc in parts_controls]
+    match_scores = [_score_matching_parts(m) for m in match_parts]
+    max_score_items = [i for i in range(len(match_scores)) if match_scores[i] == max(match_scores)]
+    if len(max_score_items) == 1:
+        return controls[max_score_items[0]]
     # Otherwise return most similar for string
-    return max(controls, key=lambda x: _lcs(str(bam_name.lower()), x.lower())) if len(controls) > 0 else ''
+    return max(controls, key=lambda x: _score_matching_parts(_lcs(str(bam_name.lower()), x.lower())))
+
+
+def _score_matching_parts(matches):
+    # We want the avangard parts to be more important
+    return len(matches) + sum(1 / (s + 1) for _, s in matches)
 
 
 def _lcs(x, y):
@@ -184,18 +191,18 @@ def _lcs(x, y):
             else:
                 c[i][j] = max(c[i][j - 1], c[i - 1][j])
 
-    def back_track(i, j):
+    def _lcs_backtrack(i, j):
         if i == 0 or j == 0:
-            return ""
+            return []
         elif x[i - 1] == y[j - 1]:
-            return back_track(i - 1, j - 1) + x[i - 1]
+            return _lcs_backtrack(i - 1, j - 1) + [(x[i - 1], i - 1)]
         else:
             if c[i][j - 1] > c[i - 1][j]:
-                return back_track(i, j - 1)
+                return _lcs_backtrack(i, j - 1)
             else:
-                return back_track(i - 1, j)
+                return _lcs_backtrack(i - 1, j)
 
-    return len(back_track(m, n))
+    return _lcs_backtrack(m, n)
 
 
 ####################
@@ -251,8 +258,13 @@ def macs_species(genome):
 
 # Small test
 if __name__ == '__main__':
-    print(_lcs_or_parts('GSM646340_H1_H3K36me3_rep2.bam', [
+    print(find_matching_control('GSM646340_H1_H3K36me3_rep2.bam', [
         'GSM646390_HMEC_Input_rep2.bam',
         'GSM646351_H1_Input_rep1.bam',
         'GSM646352_H1_Input_rep2.bam',
     ]))
+    print(find_matching_control('CD4_H3K27ac_rep1_hg38_ENCFF732DAD.bam', [
+        'CD4_Control_hg38_ENCFF140FVH.bam',
+        'CD4ABT_Control_rep1_hg38_ENCFF178GLM.bam',
+    ]))
+
