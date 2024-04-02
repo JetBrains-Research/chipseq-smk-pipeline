@@ -5,7 +5,8 @@ localrules: all_reads_coverage_results
 ######## Step: Visualization: Reads coverage ##################
 rule all_reads_coverage_results:
     input:
-         bws=expand('bw/{sample}.bw', sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS)),
+         bws=expand('bw/{sample}.bw', sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS)) \
+             if bool(config['bw']) else []
 
 rule index_bams:
     input: '{anywhere}/{sample}.bam'

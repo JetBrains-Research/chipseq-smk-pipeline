@@ -79,8 +79,8 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --config fastq_dir=<fastq_dir> genome=<genome> --rerun-incomplete
 ```
 
-Default pipeline doesn't launch peak callers. 
-Please add `macs2=True`, `sicer=True`, `span=True` to call peaks with MACS2, SICER or SPAN. 
+The Default pipeline doesn't perform coverage visualization and launch peak callers. 
+Please add `bw=True, macs2=True`, `sicer=True`, `span=True` to create coverage bw files and call peaks.
 
 To launch MACS2 in `--broad` mode, use the following config:
 
@@ -92,7 +92,7 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --rerun-incomplete
 ```
 
-See `config.yaml` for complete list of parameters. Use`--config` to override default options from `config.yaml` file.
+See `config.yaml` for a complete list of parameters. Use`--config` to override default options from `config.yaml` file.
 
 QSUB
 ----

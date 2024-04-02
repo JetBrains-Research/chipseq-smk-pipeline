@@ -29,6 +29,7 @@ start_with_bams: False
 
 # ======================== Visualization ================
 
+bw: False
 # Produce normalized coverage ignoring duplicated reads
 bamCoverage_params: "--normalizeUsing CPM --ignoreDuplicates"
 
