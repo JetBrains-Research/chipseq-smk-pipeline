@@ -5,14 +5,14 @@ localrules: download_span
 ######## Step: Peak Calling: SPAN ##################
 rule all_span:
     input:
-        span_peaks=expand(f'span/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}_{config["span_gap"]}.peak',
+        span_peaks=expand(f'span/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}.peak',
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         ) if bool(config['span']) else []
 
 
 rule download_span:
-    output: 'bin/span-1.5.6351.jar'
-    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-1.5.6351.jar'
+    output: 'bin/span-1.6.6499.jar'
+    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-1.6.6499.jar'
 
 
 def span_input_fun(wildcards):
@@ -34,21 +34,26 @@ def span_input_fun(wildcards):
 rule call_peaks_span:
     input: unpack(span_input_fun)
     output:
-        peaks=f'span/{{sample}}_{{bin}}_{{fdr}}_{{gap}}.peak'
-    log: f'logs/span/{{sample}}_{{bin}}_{{fdr}}_{{gap}}.log'
+        peaks=f'span/{{sample}}_{{bin}}_{{fdr}}.peak'
+    log: f'logs/span/{{sample}}_{{bin}}_{{fdr}}.log'
     conda: '../envs/java.env.yaml'
     threads: 4
     params:
         span_params=config['span_params'],
+        span_fragment=config['span_fragment'],
         span_iterations=config['span_iterations'],
         span_threshold=config['span_threshold'],
+        span_bg_sensitivity=config['span_bg_sensitivity'],
+        span_clip=config['span_clip'],
+        span_threads=config['span_threads'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
-        threads = 4,
+        threads = {params.span_threads},
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
          '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} --threads {threads} '
-         '--bin {wildcards.bin} --fdr {wildcards.fdr} --gap {wildcards.gap} {params.span_params} &> {log}'
+         '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} '
+         '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {params.span_threads} '
+         '--bg-sensitivity {params.span_bg_sensitivity} --clip {params.span_clip} {params.span_params} &> {log}'

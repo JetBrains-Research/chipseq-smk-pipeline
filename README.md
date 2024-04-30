@@ -112,8 +112,9 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     all --use-conda --directory <work_dir> \
     --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
     --config fastq_dir=<fastq_dir> genome=<genome> \
+    bowtie2_params="-X 2000 --dovetail" \
     macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
-    span=True span_params="--fragment 0" bowtie2_params="-X 2000 --dovetail"  --rerun-incomplete
+    span=True span_fragment=0 span_bg_sensitivity=1.0 span_clip=0.4 --rerun-incomplete
 ```
 
 P.S: Use `--config` to override default options from `config.yaml` file

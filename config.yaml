@@ -60,9 +60,12 @@ sicer_evalue: 100
 
 # ======================== SPAN ========================
 span: False
-span_bin: 100
-span_gap: 3
+span_bin: 200
+span_fragment: "auto"
 span_fdr: 0.05
-span_iterations: 20
+span_bg_sensitivity: 0.2
+span_clip: 0.4
+span_iterations: 10
 span_threshold: 0.1
-span_params: "--clip"
+span_params: ""
+span_threads: 8
