@@ -43,21 +43,19 @@ rule call_peaks_span:
         peaks=f'span/{{sample}}_{{bin}}_{{fdr}}.peak'
     log: f'logs/span/{{sample}}_{{bin}}_{{fdr}}.log'
     conda: '../envs/java.env.yaml'
-    threads: 4
+    threads: config['span_threads']
     params:
         span_params=config['span_params'],
         span_fragment=config['span_fragment'],
         span_iterations=config['span_iterations'],
         span_threshold=config['span_threshold'],
-        span_threads=config['span_threads'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
-        threads = {params.span_threads},
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
          '{params.control_arg} --peaks {output.peaks} --model span/{wildcards.sample}_{wildcards.bin}.span '
          '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} '
-         '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {params.span_threads} '
+         '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {threads} '
          '{params.span_params} {input.additional} &> {log}'
