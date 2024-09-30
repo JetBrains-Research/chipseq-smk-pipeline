@@ -11,8 +11,8 @@ rule all_span:
 
 
 rule download_span:
-    output: 'bin/span-1.6.6499.jar'
-    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-1.6.6499.jar'
+    output: 'bin/span.jar'
+    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-***.jar'
 
 
 def span_input_fun(wildcards):
@@ -23,11 +23,17 @@ def span_input_fun(wildcards):
         control_sample = SAMPLE_2_CONTROL_MAP[sample]
         control_args['control'] = f"{config['bams_dir']}/{control_sample}.bam"
 
+    additional = ''
+    if 'gap' not in config['span_params'] and (
+        'k36me3' in sample.lower() or 'k27me3' in sample.lower()):
+         additional = '--gap 10'  # Extend gap for broad marks
+
     return dict(
         signal=f"{config['bams_dir']}/{sample}.bam",
         **control_args,
         span=rules.download_span.output,
         chrom_sizes=rules.download_chrom_sizes.output,
+        additional=additional
     )
 
 
@@ -43,8 +49,6 @@ rule call_peaks_span:
         span_fragment=config['span_fragment'],
         span_iterations=config['span_iterations'],
         span_threshold=config['span_threshold'],
-        span_bg_sensitivity=config['span_bg_sensitivity'],
-        span_clip=config['span_clip'],
         span_threads=config['span_threads'],
         control_arg=lambda wildcards, input: f" -c {input.control}" if input.get('control', None) else ""
     resources:
@@ -53,7 +57,7 @@ rule call_peaks_span:
         time = 60 * 120
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
-         '{params.control_arg} --peaks {output.peaks} --model span/fit/{wildcards.sample}_{wildcards.bin}.span '
+         '{params.control_arg} --peaks {output.peaks} --model span/{wildcards.sample}_{wildcards.bin}.span '
          '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} '
          '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {params.span_threads} '
-         '--bg-sensitivity {params.span_bg_sensitivity} --clip {params.span_clip} {params.span_params} &> {log}'
+         '{params.span_params} {input.additional} &> {log}'
