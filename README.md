@@ -94,6 +94,12 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
 
 See `config.yaml` for a complete list of parameters. Use`--config` to override default options from `config.yaml` file.
 
+Rules
+----
+Rules DAG produced with additional command line agruments `--forceall --rulegraph | dot -Tpdf > rules.pdf`
+
+![Rules](rules.png?raw=true "Rules DAG")
+
 QSUB
 ----
 
