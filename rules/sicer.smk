@@ -111,4 +111,5 @@ rule call_peaks_sicer:
         '    {params.fragment} $(cat "{params.workdir}/{input.effective_genome_fraction}")'
         '    {wildcards.gap} {params.significance} &>> {params.workdir}/{log} &&'
         ' ls -lah  &>> {params.workdir}/{log} &&'
-        ' mv {params.peaks_file} {params.workdir}/{output} &>> {params.workdir}/{log}'
+        ' mv {params.peaks_file} {params.workdir}/{output} &>> {params.workdir}/{log} && '
+        ' rm -rf $tmp_sicer'
