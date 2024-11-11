@@ -11,8 +11,8 @@ rule all_span:
 
 
 rule download_span:
-    output: 'bin/span.jar'
-    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-2.0.***.jar'
+    output: 'bin/span-2.0.jar'
+    shell: 'wget -O {output}  https://download.jetbrains.com/biolabs/span/span-2.0.6558.jar'
 
 
 def span_input_fun(wildcards):
