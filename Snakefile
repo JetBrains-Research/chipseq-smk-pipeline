@@ -52,7 +52,7 @@ onstart:
 include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"
 include: "rules/alignment.smk"
-include: "rules/reads_coverage.smk"
+include: "rules/reads_bw.smk"
 include: "rules/bam_quality_metrics.smk"
 include: "rules/macs2.smk"
 include: "rules/sicer.smk"
@@ -86,7 +86,9 @@ rule all:
             *([] if not bool(config['bams_additional_qc']) else rules.all_bam_quality_metrics_results.input)
         ]),
         # Visualization
-        rules.all_reads_coverage_results.input,
+        rules.all_reads_bw_results.input,
+        # Visualization tags
+        rules.all_tags_bw_results.input,
         # macs2
         rules.all_macs2_results.input,
         # sicer

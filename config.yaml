@@ -33,6 +33,9 @@ bw: False
 # Produce normalized coverage ignoring duplicated reads
 bamCoverage_params: "--normalizeUsing CPM --ignoreDuplicates"
 
+tagsbw: False
+tags2bw_fragment: 150
+
 # ======================== MACS2 ========================
 macs2: False
 # MACS2 Narrow:
