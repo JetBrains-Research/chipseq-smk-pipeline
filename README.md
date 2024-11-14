@@ -18,7 +18,6 @@ Pipeline aligned FASTQ or gzipped FASTQ reads, defined in `config.yaml`.<br>
 Reads folder is a relative path in pipeline working directory and defined by `fastq_dir` property.<br>
 FASTQ reads extension is defined by `fastq_ext` property, e.g. could be `fq`, `fq.gz`, `fastq`, `fastq.gz`.
 
-
 **Input BAM files**
 
 Use `start_with_bams=True` config option to start with existing bam files.<br>
@@ -79,7 +78,7 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --config fastq_dir=<fastq_dir> genome=<genome> --rerun-incomplete
 ```
 
-The Default pipeline doesn't perform coverage visualization and launch peak callers. 
+The Default pipeline doesn't perform coverage visualization and launch peak callers.
 Please add `bw=True, macs2=True`, `sicer=True`, `span=True` to create coverage bw files and call peaks.
 
 To launch MACS2 in `--broad` mode, use the following config:
@@ -100,10 +99,10 @@ Rules DAG produced with additional command line agruments `--forceall --rulegrap
 
 ![Rules](rules.png?raw=true "Rules DAG")
 
-QSUB
-----
+Computational cluster QSUB/LFS/QSUB
+-----------------------------------
 
-Configure profile for qsub with Torque scheduler with name `generic_qsub`
+Configure profile for required cluster system with name `cluster`.
 
 ```bash
 $ mkdir -p ~/.config/snakemake
@@ -116,7 +115,7 @@ Example of ATAC-Seq processing on qsub
 ```bash
 $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     all --use-conda --directory <work_dir> \
-    --profile generic_qsub --cluster-config qsub_config.yaml --jobs 150 \
+    --profile cluster --cluster-config cluster_config.yaml --jobs 150 \
     --config fastq_dir=<fastq_dir> genome=<genome> \
     bowtie2_params="-X 2000 --dovetail" \
     macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
@@ -143,6 +142,8 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
 
 Useful links
 ------------
+
 * Learn more about [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system
 * Developed with [SnakeCharm](https://plugins.jetbrains.com/plugin/11947-snakecharm) plugin
-  for [PyCharm](https://www.jetbrains.com/pycharm/) IDE by JetBrains Research [BioLabs](https://research.jetbrains.org/groups/biolabs)
+  for [PyCharm](https://www.jetbrains.com/pycharm/) IDE by JetBrains
+  Research [BioLabs](https://research.jetbrains.org/groups/biolabs)
