@@ -33,13 +33,12 @@ rule bowtie2_index:
     conda: '../envs/bio.env.yaml'
     threads: 8
     resources:
-        threads=8,
         mem=32,mem_ram=28,
         time=60 * 120
     params:
         files_list=lambda wildcards: ','.join(glob('fa/*.fa.gz')),
         target='bowtie2-index/{genome}'.format(genome=config['genome'])
-    shell: 'mkdir -p {output} && bowtie2-build {params.files_list} {params.target} &> {log}'
+    shell: 'mkdir -p {output} && bowtie2-build --threads {threads} {params.files_list} {params.target} &> {log}'
 
 # Align
 rule bowtie2_align_single:
@@ -50,7 +49,6 @@ rule bowtie2_align_single:
     log: "logs/bam_raw/bowtie2/{sample}.log"
     threads: 8
     resources:
-        threads=8,
         mem=16,mem_ram=12,
         time=60 * 120
     params:
@@ -68,7 +66,6 @@ rule bowtie2_align_paired:
     log: "logs/bam_raw/bowtie2/{sample}.log"
     threads: 8
     resources:
-        threads=8,
         mem=16,mem_ram=12,
         time=60 * 120
     conda: '../envs/bio.env.yaml'
@@ -106,9 +103,7 @@ rule filter_sort_bam_single:
     output: '{anywhere}/{sample}.bam'
     log: 'logs/bam_filtered/{anywhere}/{sample}.log'
     conda: '../envs/bio.env.yaml'
-    threads: 4
     resources:
-        threads=4,
         mem=16,mem_ram=12,
         time=60 * 120
     shell:
