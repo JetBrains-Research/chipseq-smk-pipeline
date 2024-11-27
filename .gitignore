@@ -1,0 +1,4 @@
+.DS_Store
+.idea/
+.snakemake/
+__pycache__/
