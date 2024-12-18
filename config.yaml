@@ -63,6 +63,7 @@ sicer_evalue: 100
 
 # ======================== SPAN ========================
 span: False
+span_workdir: "span"
 span_bin: 100
 span_fragment: "auto"
 span_fdr: 0.05

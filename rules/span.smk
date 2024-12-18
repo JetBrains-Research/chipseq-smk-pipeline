@@ -39,6 +39,7 @@ rule call_peaks_span:
     conda: '../envs/java.env.yaml'
     threads: config['span_threads']
     params:
+        span_workdir=config['span_workdir'],
         span_params=config['span_params'],
         span_fragment=config['span_fragment'],
         span_iterations=config['span_iterations'],
@@ -51,6 +52,6 @@ rule call_peaks_span:
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
          '{params.control_arg} --peaks {output.peaks} --model span/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} '
+         '--workdir {params.span_workdir} --iterations {params.span_iterations} --threshold {params.span_threshold} '
          '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {threads} '
          '{params.span_params} {params.additional_arg} &> {log}'
