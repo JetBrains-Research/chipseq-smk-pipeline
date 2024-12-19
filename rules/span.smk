@@ -5,7 +5,7 @@ localrules: download_span
 ######## Step: Peak Calling: SPAN ##################
 rule all_span:
     input:
-        span_peaks=expand(f'span/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}.peak',
+        span_peaks=expand(f'{config["span_workdir"]}/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}.peak',
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         ) if bool(config['span']) else []
 
@@ -34,8 +34,8 @@ def span_input_fun(wildcards):
 rule call_peaks_span:
     input: unpack(span_input_fun)
     output:
-        peaks=f'span/{{sample}}_{{bin}}_{{fdr}}.peak'
-    log: f'logs/span/{{sample}}_{{bin}}_{{fdr}}.log'
+        peaks=f'{config["span_workdir"]}/{{sample}}_{{bin}}_{{fdr}}.peak'
+    log: f'logs/{config["span_workdir"]}/{{sample}}_{{bin}}_{{fdr}}.log'
     conda: '../envs/java.env.yaml'
     threads: config['span_threads']
     params:
@@ -51,7 +51,7 @@ rule call_peaks_span:
         time = 60 * 120
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
-         '{params.control_arg} --peaks {output.peaks} --model span/{wildcards.sample}_{wildcards.bin}.span '
+         '{params.control_arg} --peaks {output.peaks} --model {params.span_workdir}/{wildcards.sample}_{wildcards.bin}.span '
          '--workdir {params.span_workdir} --iterations {params.span_iterations} --threshold {params.span_threshold} '
          '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {threads} '
          '{params.span_params} {params.additional_arg} &> {log}'
