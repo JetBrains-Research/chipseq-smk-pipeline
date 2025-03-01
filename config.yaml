@@ -21,6 +21,9 @@ genome: hg38
 bowtie2_params: ""
 #bowtie2_params: "-X 2000 --dovetail"
 
+reads_qc: False
+bams_qc: False
+
 # Compute NRF, PBC for BAM alignment
 bams_additional_qc: False
 

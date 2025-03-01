@@ -136,7 +136,7 @@ Launch `chipseq-smk-pipeline`:
 ```bash
 $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     all --use-conda --cores all --directory <work_dir> \
-    --config fastq_ext=fastq.gz fastq_dir=<work_dir> genome=hg19 macs2=True sicer=True span=True \
+    --config fastq_ext=fastq.gz fastq_dir=<work_dir> bw=True genome=hg19 macs2=True sicer=True span=True \
     --rerun-incomplete
 ```
 

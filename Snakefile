@@ -75,23 +75,23 @@ rule all:
     input:
         *([] if bool(config['start_with_bams']) else [
             # Reads qc
-            rules.all_raw_qc_results.input,
+            *([] if not bool(config['reads_qc']) else rules.all_raw_qc_results.input),
             # Optional reads trimming
             *([] if not bool(config['trim_reads']) else rules.all_trim_fastq_results.input),
             # Alignment
             rules.all_alignment_results.input,
             # Alignment qc
-            rules.all_alignment_qc.input,
+            *([] if not bool(config['bams_qc']) else rules.all_alignment_qc.input),
             # Optional advanced BAM quality metrics
             *([] if not bool(config['bams_additional_qc']) else rules.all_bam_quality_metrics_results.input)
         ]),
         # Visualization
-        rules.all_reads_bw_results.input,
+        *([] if not bool(config['bw']) else rules.all_reads_bw_results.input),
         # Visualization tags
-        rules.all_tags_bw_results.input,
+        *([] if not bool(config['tagsbw']) else rules.all_tags_bw_results.input),
         # macs2
-        rules.all_macs2_results.input,
+        *([] if not bool(config['macs2']) else rules.all_macs2_results.input),
         # sicer
-        rules.all_sicer_results.input,
+        *([] if not bool(config['sicer']) else rules.all_sicer_results.input),
         # span
-        rules.all_span.input
+        *([] if not bool(config['span']) else rules.all_span.input)

@@ -7,7 +7,7 @@ rule all_span:
     input:
         span_peaks=expand(f'{config["span_workdir"]}/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}.peak',
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
-        ) if bool(config['span']) else []
+        )
 
 
 rule download_span:

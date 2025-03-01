@@ -6,8 +6,6 @@ localrules: all_sicer_results
 ######## Step: Peak Calling: SICER ##################
 def sicer_all_peaks_input():
     files = []
-    if not bool(config['sicer']):
-        return files
 
     window_size=config['sicer_window']
     gap=config['sicer_gap']

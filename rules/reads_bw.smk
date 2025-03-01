@@ -5,13 +5,11 @@ localrules: all_reads_bw_results
 ######## Step: Visualization: Reads baws ##################
 rule all_reads_bw_results:
     input:
-         bws=expand('bw/{sample}.bw', sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS)) \
-             if bool(config['bw']) else []
+         bws=expand('bw/{sample}.bw', sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
 
 rule all_tags_bw_results:
     input:
-        bws=expand('tagsbw/{sample}.bw', sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS)) \
-            if bool(config['tagsbw']) else []
+        bws=expand('tagsbw/{sample}.bw', sample=aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
 
 
 rule index_bams:
