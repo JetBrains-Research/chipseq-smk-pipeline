@@ -27,18 +27,16 @@ Pipeline starts with `BAM` files in `work_dir/bams` folder.
 Files
 -----
 
-| Path          | Description                                                                          |
-|---------------|--------------------------------------------------------------------------------------|
-| `config.yaml` | Default pipeline options                                                             |
-| `trimmed`     | Trimmed FASTQ file, if `trim_reads` option is True.                                  |
-| `bams`        | BAMs with aligned reads, `MAPQ >= 30`                                                |
-| `bw`          | BAM coverage visualization using [DeepTools](https://doi.org/10.1093/nar/gku365)     |
-| `macs2`       | [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137) peaks                              |
-| `sicer`       | [SICER](https://doi.org/10.1093/bioinformatics/btp340) peaks                         |
-| `span`        | [SPAN](https://doi.org/10.1093/bioinformatics/btab376) peaks                         |
-| `qc`          | QC Reports                                                                           |
-| `multiqc`     | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps |
-| `logs`        | Shell commands logs                                                                  |
+| Path                 | Description                                                                          |
+|----------------------|--------------------------------------------------------------------------------------|
+| `config.yaml`        | Default pipeline options                                                             |
+| `trimmed`            | Trimmed FASTQ file, if `trim_reads` option is True.                                  |
+| `bams`               | BAMs with aligned reads, `MAPQ >= 30`                                                |
+| `bw`                 | BAM coverage visualization using [DeepTools](https://doi.org/10.1093/nar/gku365)     |
+| `<peak_caller_name>` | Peaks provided by peak caller tool `<peak_caller_name>`                              |
+| `qc`                 | QC Reports                                                                           |
+| `multiqc`            | [MultiQC](https://doi.org/10.1093/bioinformatics/btw354) reports for different steps |
+| `logs`               | Shell commands logs                                                                  |
 
 Requirements
 ------------
@@ -78,8 +76,18 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --config fastq_dir=<fastq_dir> genome=<genome> --rerun-incomplete
 ```
 
-The Default pipeline doesn't perform coverage visualization and launch peak callers.
-Please add `bw=True, macs2=True`, `sicer=True`, `span=True` to create coverage bw files and call peaks.
+The Default pipeline doesn't perform coverage visualization and launch peak callers.<br>
+Please add `bw=True`, `<peak_caller_name>=True` to create coverage bw files and call peaks with `<peak_caller_name>`.
+
+See `config.yaml` for a complete list of parameters. Use`--config` to override default options from `config.yaml` file.
+
+Peak callers
+------------
+Supported peak caller tools:
+
+* [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137)
+* [SICER](https://doi.org/10.1093/bioinformatics/btp340)
+* [SPAN](https://doi.org/10.1093/bioinformatics/btab376)
 
 To launch MACS2 in `--broad` mode, use the following config:
 
@@ -91,10 +99,8 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --rerun-incomplete
 ```
 
-See `config.yaml` for a complete list of parameters. Use`--config` to override default options from `config.yaml` file.
-
 Rules
-----
+-----
 Rules DAG produced with additional command line agruments `--forceall --rulegraph | dot -Tpdf > rules.pdf`
 
 ![Rules](rules.png?raw=true "Rules DAG")
@@ -119,7 +125,7 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --config fastq_dir=<fastq_dir> genome=<genome> \
     bowtie2_params="-X 2000 --dovetail" \
     macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
-    span=True span_fragment=0 span_bg_sensitivity=1.0 span_clip=0.4 --rerun-incomplete
+    span=True span_fragment=0 --rerun-incomplete
 ```
 
 P.S: Use `--config` to override default options from `config.yaml` file
