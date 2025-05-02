@@ -74,3 +74,21 @@ span_iterations: 10
 span_threshold: 1e-4
 span_params: ""
 span_threads: 8
+
+# ======================== MACS3 ========================
+macs3: False
+# MACS2 Narrow:
+macs3_mode: narrow
+macs3_params: "-q 0.05"
+macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
+
+# MACS3 Broad
+#macs3_mode: broad
+#macs3_params: "--broad --broad-cutoff 0.1"
+#macs3_suffix: broad0.1 # do not use underscores here otherwise wrong sample wildcards
+
+# MACS3 ATAC-seq:
+#macs3_mode: narrow
+#macs3_params: "-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits"
+#macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
+
