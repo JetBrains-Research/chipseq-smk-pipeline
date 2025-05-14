@@ -95,3 +95,6 @@ macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcar
 # ======================== HOMER =======================
 homer: False
 
+# ======================== FSeq2 =======================
+fseq2: False
+

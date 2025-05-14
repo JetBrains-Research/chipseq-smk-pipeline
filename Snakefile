@@ -59,6 +59,7 @@ include: "rules/sicer.smk"
 include: "rules/span.smk"
 include: "rules/macs3.smk"
 include: "rules/homer.smk"
+include: "rules/fseq2.smk"
 
 wildcard_constraints:
     sample="[^/]+"
@@ -100,4 +101,6 @@ rule all:
         # macs3
         *([] if not bool(config['macs3']) else rules.all_macs3_results.input),
         # homer
-        *([] if not bool(config['homer']) else rules.all_homer_results.input)
+        *([] if not bool(config['homer']) else rules.all_homer_results.input),
+        # fseq2
+        *([] if not bool(config['fseq2']) else rules.all_fseq2_results.input)
