@@ -60,6 +60,7 @@ include: "rules/span.smk"
 include: "rules/macs3.smk"
 include: "rules/homer.smk"
 include: "rules/fseq2.smk"
+include: "rules/hotspot.smk"
 
 wildcard_constraints:
     sample="[^/]+"
@@ -103,4 +104,6 @@ rule all:
         # homer
         *([] if not bool(config['homer']) else rules.all_homer_results.input),
         # fseq2
-        *([] if not bool(config['fseq2']) else rules.all_fseq2_results.input)
+        *([] if not bool(config['fseq2']) else rules.all_fseq2_results.input),
+        # hotspot
+        *([] if not bool(config['hotspot']) else rules.all_hotspot_results.input)

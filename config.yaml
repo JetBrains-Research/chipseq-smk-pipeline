@@ -98,3 +98,7 @@ homer: False
 # ======================== FSeq2 =======================
 fseq2: False
 
+# ======================== Hotspot =======================
+hotspot: False
+hotspot_executable: hotspot
+
