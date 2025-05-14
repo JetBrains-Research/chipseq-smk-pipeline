@@ -6,7 +6,7 @@ localrules: all_hotspot_results
 ######## Step: Peak Calling: Hotspot ##################
 rule all_hotspot_results:
     input:
-        span_peaks=expand(f'hotspot/{{sample}}.peak',
+        hotspot_peaks=expand(f'hotspot/{{sample}}.peak',
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         )
 
