@@ -89,6 +89,9 @@ Supported peak caller tools:
 * [MACS3](https://macs3-project.github.io/MACS/)
 * [SICER](https://doi.org/10.1093/bioinformatics/btp340)
 * [SPAN](https://doi.org/10.1093/bioinformatics/btab376)
+* [HOMER](https://doi.org/10.1016/j.molcel.2010.05.004)
+* [FSeq2](https://doi.org/10.1093/nargab/lqab012)
+* [HotSpot](https://doi.org/10.1038/ng.759)
 
 To launch MACS2 in `--broad` mode, use the following config:
 
