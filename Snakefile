@@ -58,6 +58,7 @@ include: "rules/macs2.smk"
 include: "rules/sicer.smk"
 include: "rules/span.smk"
 include: "rules/macs3.smk"
+include: "rules/homer.smk"
 
 wildcard_constraints:
     sample="[^/]+"
@@ -97,4 +98,6 @@ rule all:
         # span
         *([] if not bool(config['span']) else rules.all_span.input),
         # macs3
-        *([] if not bool(config['macs3']) else rules.all_macs3_results.input)
+        *([] if not bool(config['macs3']) else rules.all_macs3_results.input),
+        # homer
+        *([] if not bool(config['homer']) else rules.all_homer_results.input)

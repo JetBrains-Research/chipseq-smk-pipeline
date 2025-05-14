@@ -92,3 +92,6 @@ macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcar
 #macs3_params: "-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits"
 #macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
 
+# ======================== HOMER =======================
+homer: False
+
