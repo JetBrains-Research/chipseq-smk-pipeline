@@ -38,8 +38,8 @@ rule call_peaks_homer:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
-        'tmp_sicer=$(mktemp -d) && mkdir -p $tmp_sicer && cd $tmp_sicer &&'
+        'tmp_hotspot=$(mktemp -d) && mkdir -p $tmp_hotspot && cd $tmp_hotspot &&'
         'makeTagDirectory treatment {params.work_dir}/{input.signal} && {params.control_mktags} '
         'findPeaks treatment -style histone -o auto {params.control_arg} && '
         'cat treatment/regions.txt | grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n > {params.work_dir}/{output.peaks} && '
-        'cd .. && rm -rf $tmp_sicer'
+        'cd .. && rm -rf $tmp_hotspot'
