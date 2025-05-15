@@ -39,7 +39,6 @@ rule call_peaks_span:
     conda: '../envs/java.env.yaml'
     threads: config['span_threads']
     params:
-        span_workdir=config['span_workdir'],
         span_params=config['span_params'],
         span_fragment=config['span_fragment'],
         span_iterations=config['span_iterations'],
