@@ -92,6 +92,7 @@ Supported peak caller tools:
 * [HOMER](https://doi.org/10.1016/j.molcel.2010.05.004)
 * [FSeq2](https://doi.org/10.1093/nargab/lqab012)
 * [HotSpot](https://doi.org/10.1038/ng.759)
+* [PeakSeq](https://doi.org/10.1038/nbt.1518)
 
 To launch MACS2 in `--broad` mode, use the following config:
 

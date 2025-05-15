@@ -54,6 +54,7 @@ include: "rules/trim_fastq.smk"
 include: "rules/alignment.smk"
 include: "rules/reads_bw.smk"
 include: "rules/bam_quality_metrics.smk"
+# Peak callers
 include: "rules/macs2.smk"
 include: "rules/sicer.smk"
 include: "rules/span.smk"
@@ -61,6 +62,7 @@ include: "rules/macs3.smk"
 include: "rules/homer.smk"
 include: "rules/fseq2.smk"
 include: "rules/hotspot.smk"
+include: "rules/peakseq.smk"
 
 wildcard_constraints:
     sample="[^/]+"
@@ -106,4 +108,6 @@ rule all:
         # fseq2
         *([] if not bool(config['fseq2']) else rules.all_fseq2_results.input),
         # hotspot
-        *([] if not bool(config['hotspot']) else rules.all_hotspot_results.input)
+        *([] if not bool(config['hotspot']) else rules.all_hotspot_results.input),
+        # peakseq
+        *([] if not bool(config['peakseq']) else rules.all_peakseq_results.input)

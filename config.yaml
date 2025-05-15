@@ -102,3 +102,7 @@ fseq2: False
 hotspot: False
 hotspot_executable: hotspot
 
+# ======================== Peakseq =======================
+peakseq: False
+peakseq_executable: peakseq
+
