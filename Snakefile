@@ -53,7 +53,6 @@ include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"
 include: "rules/alignment.smk"
 include: "rules/reads_bw.smk"
-include: "rules/bam_quality_metrics.smk"
 # Peak callers
 include: "rules/macs2.smk"
 include: "rules/sicer.smk"
@@ -90,8 +89,6 @@ rule all:
             rules.all_alignment_results.input,
             # Alignment qc
             *([] if not bool(config['bams_qc']) else rules.all_alignment_qc.input),
-            # Optional advanced BAM quality metrics
-            *([] if not bool(config['bams_additional_qc']) else rules.all_bam_quality_metrics_results.input)
         ]),
         # Visualization
         *([] if not bool(config['bw']) else rules.all_reads_bw_results.input),

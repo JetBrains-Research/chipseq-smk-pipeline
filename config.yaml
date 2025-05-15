@@ -24,9 +24,6 @@ bowtie2_params: ""
 reads_qc: False
 bams_qc: False
 
-# Compute NRF, PBC for BAM alignment
-bams_additional_qc: False
-
 # Option if all will start with bams
 start_with_bams: False
 
