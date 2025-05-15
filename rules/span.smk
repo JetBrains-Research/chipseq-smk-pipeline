@@ -3,9 +3,9 @@ from pipeline_util import *
 localrules: download_span
 
 ######## Step: Peak Calling: SPAN ##################
-rule all_span:
+rule all_span_results:
     input:
-        span_peaks=expand(f'{config["span_workdir"]}/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}.peak',
+        span_peaks=expand(f'span/{{sample}}_{config["span_bin"]}_{config["span_fdr"]}.peak',
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         )
 
@@ -34,8 +34,8 @@ def span_input_fun(wildcards):
 rule call_peaks_span:
     input: unpack(span_input_fun)
     output:
-        peaks=f'{config["span_workdir"]}/{{sample}}_{{bin}}_{{fdr}}.peak'
-    log: f'logs/{config["span_workdir"]}/{{sample}}_{{bin}}_{{fdr}}.log'
+        peaks='span/{sample}_{bin}_{fdr}.peak'
+    log: 'logs/span/{sample}_{bin}_{fdr}.log'
     conda: '../envs/java.env.yaml'
     threads: config['span_threads']
     params:

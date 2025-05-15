@@ -100,7 +100,7 @@ rule all:
         # sicer
         *([] if not bool(config['sicer']) else rules.all_sicer_results.input),
         # span
-        *([] if not bool(config['span']) else rules.all_span.input),
+        *([] if not bool(config['span']) else rules.all_span_results.input),
         # macs3
         *([] if not bool(config['macs3']) else rules.all_macs3_results.input),
         # homer
