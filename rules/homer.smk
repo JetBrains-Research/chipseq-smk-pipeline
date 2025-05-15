@@ -8,6 +8,11 @@ rule all_homer_results:
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         )
 
+rule make_tags_dir:
+    input: f"{config['bams_dir']}/{{sample}}.bam"
+    output: temp(directory('homer/{sample}'))
+    conda: '../envs/homer.env.yaml'
+    shell: 'makeTagDirectory {output} {input}'
 
 def homer_input_fun(wildcards):
     sample = wildcards.sample
@@ -15,13 +20,12 @@ def homer_input_fun(wildcards):
     control_args = {}
     if sample in SAMPLE_2_CONTROL_MAP:
         control_sample = SAMPLE_2_CONTROL_MAP[sample]
-        control_args['control'] = f"{config['bams_dir']}/{control_sample}.bam"
+        control_args['control'] = f"homer/{control_sample}"
 
     return dict(
-        signal=f"{config['bams_dir']}/{sample}.bam",
+        signal=f"homer/{sample}",
         **control_args,
     )
-
 
 rule call_peaks_homer:
     input: unpack(homer_input_fun)
@@ -31,15 +35,11 @@ rule call_peaks_homer:
     conda: '../envs/homer.env.yaml'
     params:
         work_dir=WORK_DIR,
-        control_mktags = lambda wildcards, input: \
-            f"makeTagDirectory control {WORK_DIR}/{input.control} && " if input.get('control', None) else "",
-        control_arg=lambda wildcards, input: f" -i control" if input.get('control', None) else ""
+        control_arg=lambda wildcards, input: f" -i {input.get('control', None)}" if input.get('control', None) else ""
     resources:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
-        'tmp_homer=$(mktemp -d) && mkdir -p $tmp_homer && cd $tmp_homer && '
-        'makeTagDirectory treatment {params.work_dir}/{input.signal} && {params.control_mktags} '
-        'findPeaks treatment -style histone -o auto {params.control_arg} && '
-        'cat treatment/regions.txt | grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n > {params.work_dir}/{output.peaks} && '
-        'cd .. && rm -rf $tmp_homer'
+        'findPeaks {input.signal} -style histone -o auto {params.control_arg} &> {log} && '
+        'cat {input.signal}/regions.txt | grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n >\
+         {params.work_dir}/{output.peaks}'
