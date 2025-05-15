@@ -1,7 +1,5 @@
 from pipeline_util import *
 
-localrules: download_peakseq
-
 ######## Step: Peak Calling: Peakseq ##################
 rule all_peakseq_results:
     input:
