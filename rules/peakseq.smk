@@ -42,7 +42,7 @@ rule bam_preprocess:
         'rm {output}/chr_ids.txt.raw'
 
 
-def peakseq_input_fun(wildcards):
+def peakseq_config_dat_input_fun(wildcards):
     sample = wildcards.sample
 
     control_args = {}
@@ -52,16 +52,23 @@ def peakseq_input_fun(wildcards):
 
     return dict(
         sample=sample,
-        config_dat=f"peakseq/{sample}.config.dat",
         mappability_file=rules.download_peakseq_mappability.output,
         signal=f"peakseq/{sample}_reads",
         **control_args,
         chrom_sizes=rules.download_chrom_sizes.output,
     )
 
+def peakseq_input_fun(wildcards):
+    sample = wildcards.sample
+    pcdif = peakseq_config_dat_input_fun(wildcards)
+    return dict(
+        config_dat=f"peakseq/{sample}.config.dat",
+        **pcdif
+    )
+
 
 rule prepare_peakseq_config:
-    input: unpack(peakseq_input_fun)
+    input: unpack(peakseq_config_dat_input_fun)
     output: 'peakseq/{sample}.config.dat'
     params:
         control_arg=lambda wildcards, input: f"Input_reads_data_dirs {input.control}" if \
@@ -73,7 +80,7 @@ rule prepare_peakseq_config:
         'echo "ChIP_Seq_reads_data_dirs {input.signal}" >> {output} && '
         'echo "{params.control_arg}" >> {output} &&'
         'echo "chromosome_list_file {input.chrom_sizes}" >> {output} && '
-        'echo "narrowPeak_output_file_path {wildcards.sample}.raw" >> {output} &&'
+        'echo "narrowPeak_output_file_path peakseq/{wildcards.sample}.raw" >> {output} &&'
         'echo "Enrichment_mapped_fragment_length 200" >> {output} && '
         'echo "target_FDR 0.05" >> {output} && '
         'echo "N_Simulations 50" >> {output} && '
@@ -93,6 +100,6 @@ rule call_peaks_peakseq:
         time = 60 * 120
     shell:
         '{params.peakseq_executable} -peak_select {input.config_dat} && '
-        'cat peakseq/{wildcards.sample}.raw |\
-         awk \'{{printf("chr%s\\n", $0)}}\' | sort -k1,1 -k2,2n -k3,3n > {output} && '
+        'cat peakseq/{wildcards.sample}.raw | awk \'{{printf("chr%s\\n", $0)}}\' |\
+         sort -k1,1 -k2,2n -k3,3n > {output} && '
         'rm peakseq/{wildcards.sample}.raw'
