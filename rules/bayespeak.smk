@@ -18,8 +18,8 @@ def bayespeak_input_fun(wildcards):
     control_sample = SAMPLE_2_CONTROL_MAP[sample]
 
     return dict(
-        signal_pileup=f"{config['bams_dir']}/pileup/{sample}.bed",
-        control_pileup=f"{config['bams_dir']}/pileup/{control_sample}.bed",
+        signal_pileup=f"{config['bams_dir']}/pileup/{sample}.filtered.bed",
+        control_pileup=f"{config['bams_dir']}/pileup/{control_sample}.filtered.bed",
         chrom_sizes=rules.download_chrom_sizes.output,
     )
 
@@ -29,7 +29,6 @@ rule call_peaks_bayespeak:
     output: 'bayespeak/{sample}.bed'
     log: 'logs/bayespeak/{sample}.log'
     params:
-        workdir=WORK_DIR,
         bayespeak_rscript_executable=config['bayespeak_rscript_executable'],
         control_pileup=lambda wildcards, input: input['control_pileup']
     resources:
@@ -37,10 +36,6 @@ rule call_peaks_bayespeak:
         mem = 16, mem_ram = 12,
         time = 60 * 120
     shell:
-        'tmp_bayespeak=$(mktemp -d) && mkdir -p $tmp_bayespeak && cd $tmp_bayespeak && '
-        'cat {params.workdir}/{input.signal_pileup} | grep -v "_"  > $tmp_bayespeak/signal.bed && '
-        'cat {params.workdir}/{input.control_pileup} | grep -v "_"  > $tmp_bayespeak/control.bed && '
         '{params.bayespeak_rscript_executable} {workflow.basedir}/scripts/run_bayespeak.R \
-        $tmp_bayespeak/signal.bed $tmp_bayespeak/control.bed {wildcards.sample}.csv &> {params.workdir}/{log} &&'
-        ' mv {wildcards.sample}.csv {params.workdir}/{output} && '
-        ' rm -rf $tmp_bayespeak'
+        {input.signal_pileup} {input.control_pileup} {wildcards.sample}.csv &> {log} && '
+        'mv {wildcards.sample}.csv {output}'
