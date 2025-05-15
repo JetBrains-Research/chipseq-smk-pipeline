@@ -64,6 +64,7 @@ include: "rules/fseq2.smk"
 include: "rules/hotspot.smk"
 include: "rules/peakseq.smk"
 include: "rules/gps.smk"
+include: "rules/bayespeak.smk"
 
 wildcard_constraints:
     sample="[^/]+"
@@ -113,4 +114,6 @@ rule all:
         # peakseq
         *([] if not bool(config['peakseq']) else rules.all_peakseq_results.input),
         # gps
-        *([] if not bool(config['gps']) else rules.all_gps_results.input)
+        *([] if not bool(config['gps']) else rules.all_gps_results.input),
+        # bayespeak
+        *([] if not bool(config['bayespeak']) else rules.all_bayespeak_results.input)

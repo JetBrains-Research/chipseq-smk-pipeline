@@ -108,4 +108,6 @@ peakseq_executable: peakseq
 # ======================== GPS =======================
 gps: False
 
-
+# ======================== BayesPeak =======================
+bayespeak: False
+bayespeak_rscript_executable: Rscript

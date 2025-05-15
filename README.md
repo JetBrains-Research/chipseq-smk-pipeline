@@ -94,6 +94,7 @@ Supported peak caller tools:
 * [HotSpot](https://doi.org/10.1038/ng.759)
 * [PeakSeq](https://doi.org/10.1038/nbt.1518)
 * [GPS](https://doi.org/10.1093/bioinformatics/btq590)
+* [BayesPeak](https://doi.org/10.1186/1471-2105-10-299)
 
 To launch MACS2 in `--broad` mode, use the following config:
 
