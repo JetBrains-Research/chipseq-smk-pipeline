@@ -106,6 +106,49 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --rerun-incomplete
 ```
 
+Peak callers installation
+-------------------------
+This section contains instructions for manual peak callers installation.
+
+* BayesPeak
+  1. Install R
+  ```
+  mamba install  -c conda-forge r-base=3.6.3
+  ```
+  2. In R console
+  ```
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+      install.packages("BiocManager")
+  BiocManager::install(version = "3.10")  # Explicitly set correct Bioconductor version
+  BiocManager::install(c("IRanges", "GenomicRanges"))
+  ```
+
+  3. Install BayesPeak
+  ```
+  wget https://www.bioconductor.org/packages//2.10/bioc/src/contrib/BayesPeak_1.8.0.tar.gz
+  R CMD INSTALL BayesPeak_1.8.0.tar.gz 
+  ```
+
+* Hotspot
+  1. Install required dependencies
+  ```
+  sudo apt-get install build-essential libgsl-dev
+  ```
+  2. Download and make
+  ```
+  wget https://github.com/StamLab/hotspot/archive/refs/tags/v4.1.1.zip
+  gunzip v4.1.1.zip
+  cd hotspot-4.1.1/hotspot-distr/hotspot-deploy
+  make
+  ```
+* PeakSeq<br>
+  Download and make
+  ```
+  git clone https://github.com/gersteinlab/PeakSeq.git
+  cd PeakSeq
+  make
+  ```
+
 Rules
 -----
 Rules DAG produced with additional command line arguments `--forceall --rulegraph | dot -Tpdf > rules.pdf`
