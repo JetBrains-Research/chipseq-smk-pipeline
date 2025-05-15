@@ -93,6 +93,7 @@ Supported peak caller tools:
 * [FSeq2](https://doi.org/10.1093/nargab/lqab012)
 * [HotSpot](https://doi.org/10.1038/ng.759)
 * [PeakSeq](https://doi.org/10.1038/nbt.1518)
+* [GPS](https://doi.org/10.1093/bioinformatics/btq590)
 
 To launch MACS2 in `--broad` mode, use the following config:
 
@@ -106,7 +107,7 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
 
 Rules
 -----
-Rules DAG produced with additional command line agruments `--forceall --rulegraph | dot -Tpdf > rules.pdf`
+Rules DAG produced with additional command line arguments `--forceall --rulegraph | dot -Tpdf > rules.pdf`
 
 ![Rules](rules.png?raw=true "Rules DAG")
 

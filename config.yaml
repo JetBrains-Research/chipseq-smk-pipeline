@@ -105,3 +105,7 @@ hotspot_executable: hotspot
 peakseq: False
 peakseq_executable: peakseq
 
+# ======================== GPS =======================
+gps: False
+
+

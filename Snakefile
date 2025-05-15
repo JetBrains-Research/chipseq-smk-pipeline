@@ -63,6 +63,7 @@ include: "rules/homer.smk"
 include: "rules/fseq2.smk"
 include: "rules/hotspot.smk"
 include: "rules/peakseq.smk"
+include: "rules/gps.smk"
 
 wildcard_constraints:
     sample="[^/]+"
@@ -110,4 +111,6 @@ rule all:
         # hotspot
         *([] if not bool(config['hotspot']) else rules.all_hotspot_results.input),
         # peakseq
-        *([] if not bool(config['peakseq']) else rules.all_peakseq_results.input)
+        *([] if not bool(config['peakseq']) else rules.all_peakseq_results.input),
+        # gps
+        *([] if not bool(config['gps']) else rules.all_gps_results.input)
