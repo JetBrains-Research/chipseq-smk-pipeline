@@ -93,6 +93,9 @@ homer: False
 
 # ======================== FSeq2 =======================
 fseq2: False
+fseq2_threads: 8
+# Fseq2 is not well optimized by memory usage, artificially limit CPU for the sake of memory
+fseq2_effective_threads: 2
 
 # ======================== Hotspot =======================
 hotspot: False

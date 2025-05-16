@@ -35,13 +35,18 @@ rule call_peaks_fseq2:
     log: f'logs/fseq2/{{sample}}.log'
     conda: '../envs/fseq2.env.yaml'
     params:
+        workdir=WORK_DIR,
         control_arg=lambda wildcards, input: \
-            f" -control_file {input.control_pileup}" if input.get('control_pileup', None) else ""
+            f" -control_file {input.control_pileup}" if input.get('control_pileup', None) else "",
+        # Fseq2 is not well optimized by memory usage, artificially limit CPU for the sake of memory
+        threads=config['fseq2_effective_threads']
     resources:
-        mem = 12, mem_ram = 8,
+        mem = 48, mem_ram = 48,
         time = 60 * 120
+    threads: config['fseq2_threads']
+    shadow: "shallow"
     shell:
-        'mkdir -p fseq2 &&'
-        'fseq2 callpeak -v -q_thr 0.05 {params.control_arg} -chrom_size_file {input.chrom_sizes} '
-        '-name {wildcards.sample} {input.signal_pileup} &> {log} && '
-        'mv {wildcards.sample}_*.narrowPeak fseq2/'
+        'mkdir -p {params.workdir}/fseq2 &&'
+        'fseq2 callpeak -v -cpus {params.threads} -q_thr 0.05 {params.control_arg} -chrom_size_file {input.chrom_sizes} '
+        '-name {wildcards.sample} -standard_narrowpeak {input.signal_pileup} &> {log} && '
+        'mv {wildcards.sample}_*.narrowPeak {params.workdir}/fseq2/'
