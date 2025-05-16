@@ -41,5 +41,7 @@ rule call_peaks_fseq2:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
+        'mkdir -p fseq2 &&'
         'fseq2 callpeak -v -q_thr 0.05 {params.control_arg} -chrom_size_file {input.chrom_sizes} '
-        '-name {wildcards.sample} {input.signal_pileup} &> {log}'
+        '-name {wildcards.sample} {input.signal_pileup} &> {log} && '
+        'mv {wildcards.sample}_*.narrowPeak fseq2/'
