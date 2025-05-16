@@ -26,15 +26,13 @@ rule bam_to_sam:
 
 
 rule bam_preprocess:
-    input:
-        signal=f"{config['bams_dir']}/{{sample}}.bam",
-        sam=rules.bam_to_sam.output
+    input: rules.bam_to_sam.output
     output: temp(directory("peakseq/{sample}_reads"))
     params:
         peakseq_executable=config['peakseq_executable']
     shell:
         'mkdir -p {output} && '
-        '{params.peakseq_executable} -preprocess SAM {input.sam} {output} && '
+        '{params.peakseq_executable} -preprocess SAM {input} {output} && '
         'mv {output}/chr_ids.txt {output}/chr_ids.txt.raw &&'
         'cat {output}/chr_ids.txt.raw | grep -v \'_\' > {output}/chr_ids.txt && '
         'rm {output}/chr_ids.txt.raw'
@@ -49,7 +47,6 @@ def peakseq_config_dat_input_fun(wildcards):
         control_args['control'] = f"peakseq/{control_sample}_reads"
 
     return dict(
-        sample=sample,
         mappability_file=rules.download_peakseq_mappability.output,
         signal=f"peakseq/{sample}_reads",
         **control_args,
@@ -97,7 +94,7 @@ rule call_peaks_peakseq:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
-        '{params.peakseq_executable} -peak_select {input.config_dat} && '
+        '{params.peakseq_executable} -peak_select {input.config_dat} &> {log} && '
         'cat peakseq/{wildcards.sample}.raw | awk \'{{printf("chr%s\\n", $0)}}\' |\
          sort -k1,1 -k2,2n -k3,3n > {output} && '
         'rm peakseq/{wildcards.sample}.raw'
