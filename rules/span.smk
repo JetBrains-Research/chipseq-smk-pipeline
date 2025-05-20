@@ -50,7 +50,7 @@ rule call_peaks_span:
         time = 60 * 120
     shell:
          'java -Xmx{resources.mem_ram}G -jar {input.span} analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} '
-         '{params.control_arg} --peaks {output.peaks} --model {params.span_workdir}/{wildcards.sample}_{wildcards.bin}.span '
-         '--workdir {params.span_workdir} --iterations {params.span_iterations} --threshold {params.span_threshold} '
+         '{params.control_arg} --peaks {output.peaks} --model span/{wildcards.sample}_{wildcards.bin}.span '
+         '--workdir span --iterations {params.span_iterations} --threshold {params.span_threshold} '
          '--bin {wildcards.bin} --fragment {params.span_fragment} --fdr {wildcards.fdr} --threads {threads} '
          '{params.span_params} {params.additional_arg} &> {log}'
