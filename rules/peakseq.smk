@@ -4,7 +4,8 @@ from pipeline_util import *
 rule all_peakseq_results:
     input:
         peakseq_peaks=expand(f'peakseq/{{sample}}.narrowPeak',
-            sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
+            sample=filter(lambda f: not is_control(f) and f in SAMPLE_2_CONTROL_MAP,
+                aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         )
 
 
@@ -40,16 +41,12 @@ rule bam_preprocess:
 
 def peakseq_config_dat_input_fun(wildcards):
     sample = wildcards.sample
-
-    control_args = {}
-    if sample in SAMPLE_2_CONTROL_MAP:
-        control_sample = SAMPLE_2_CONTROL_MAP[sample]
-        control_args['control'] = f"peakseq/{control_sample}_reads"
+    control_sample = SAMPLE_2_CONTROL_MAP[sample]
 
     return dict(
         mappability_file=rules.download_peakseq_mappability.output,
         signal=f"peakseq/{sample}_reads",
-        **control_args,
+        control=f"peakseq/{control_sample}_reads",
         chrom_sizes=rules.download_chrom_sizes.output,
     )
 
@@ -65,15 +62,12 @@ def peakseq_input_fun(wildcards):
 rule prepare_peakseq_config:
     input: unpack(peakseq_config_dat_input_fun)
     output: 'peakseq/{sample}.config.dat'
-    params:
-        control_arg=lambda wildcards, input: f"Input_reads_data_dirs {input.control}" if \
-            input.get('control', None) else "",
     shell:
         'echo "" > {output} && '
         'echo "Experiment_id {wildcards.sample}" >> {output} && '
         'echo "Mappability_map_file {input.mappability_file}" >> {output} && '
         'echo "ChIP_Seq_reads_data_dirs {input.signal}" >> {output} && '
-        'echo "{params.control_arg}" >> {output} &&'
+        'echo "Input_reads_data_dirs {input.control}" >> {output} &&'
         'echo "chromosome_list_file {input.chrom_sizes}" >> {output} && '
         'echo "narrowPeak_output_file_path peakseq/{wildcards.sample}.raw" >> {output} &&'
         'echo "Enrichment_mapped_fragment_length 200" >> {output} && '
