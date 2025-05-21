@@ -23,7 +23,7 @@ rule bam_to_sam:
     output: temp(f"peakseq/{{sample}}.sam")
     conda: '../envs/bio.env.yaml'
     shell:
-        'samtools view -h {input} > {output}'
+        'samtools view -h {input} | awk \'/^@/ || $3 ~ /^chr([0-9]+|X|Y|M)$/\' > {output}'
 
 
 rule bam_preprocess:
