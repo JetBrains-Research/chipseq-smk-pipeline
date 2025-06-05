@@ -88,6 +88,7 @@ Supported peak caller tools:
 * [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137)
 * [MACS3](https://macs3-project.github.io/MACS/)
 * [SICER](https://doi.org/10.1093/bioinformatics/btp340)
+* [SICER2](https://github.com/zanglab/SICER2)
 * [SPAN](https://doi.org/10.1093/bioinformatics/btab376)
 * [HOMER](https://doi.org/10.1016/j.molcel.2010.05.004)
 * [FSeq2](https://doi.org/10.1093/nargab/lqab012)

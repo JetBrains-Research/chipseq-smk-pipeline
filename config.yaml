@@ -61,6 +61,14 @@ sicer_gap: 600
 sicer_fdr: 0.01
 sicer_evalue: 100
 
+# ======================== SICER2 ========================
+sicer2: False
+sicer2_fragment: 150
+sicer2_window: 200
+sicer2_gap: 600
+sicer2_fdr: 0.01
+sicer2_evalue: 1000
+
 # ======================== SPAN ========================
 span: False
 span_bin: 100

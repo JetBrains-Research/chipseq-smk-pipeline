@@ -53,9 +53,11 @@ include: "rules/raw_qc.smk"
 include: "rules/trim_fastq.smk"
 include: "rules/alignment.smk"
 include: "rules/reads_bw.smk"
+
 # Peak callers
 include: "rules/macs2.smk"
 include: "rules/sicer.smk"
+include: "rules/sicer2.smk"
 include: "rules/span.smk"
 include: "rules/macs3.smk"
 include: "rules/homer.smk"
@@ -98,6 +100,8 @@ rule all:
         *([] if not bool(config['macs2']) else rules.all_macs2_results.input),
         # sicer
         *([] if not bool(config['sicer']) else rules.all_sicer_results.input),
+        # sicer2
+        *([] if not bool(config['sicer2']) else rules.all_sicer2_results.input),
         # span
         *([] if not bool(config['span']) else rules.all_span_results.input),
         # macs3
