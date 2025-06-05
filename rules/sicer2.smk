@@ -19,8 +19,7 @@ def sicer2_all_peaks_input():
     for sample in filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS)):
         if sample not in SAMPLE_2_CONTROL_MAP:
             # w/o control
-            significance = config['sicer2_evalue']
-            no_control_file = f'sicer2/{sample}-W{window_size}-G{gap}-E{significance}.scoreisland'
+            no_control_file = f'sicer2/{sample}-W{window_size}-G{gap}.scoreisland'
             if not os.path.exists(f'{WORK_DIR}/{no_control_file}'):  # Workaround for intermediate tmp
                 files.append(no_control_file)
         else:
@@ -53,8 +52,8 @@ def sicer2_input_fun(wildcards):
 
 rule call_peaks_sicer2:
     input: unpack(sicer2_input_fun)
-    output: 'sicer2/{sample}-W{width}-G{gap, \d+}-{any_suffix}'
-    log: 'logs/sicer2/{sample}-W{width}-G{gap}-{any_suffix}.log'
+    output: 'sicer2/{sample}-W{width}-G{gap, \d+}{any_suffix}'
+    log: 'logs/sicer2/{sample}-W{width}-G{gap}{any_suffix}.log'
     conda: '../envs/sicer2.env.yaml'
     shadow: "shallow"
     params:
