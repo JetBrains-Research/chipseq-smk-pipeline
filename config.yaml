@@ -119,3 +119,6 @@ gps: False
 # ======================== BayesPeak =======================
 bayespeak: False
 bayespeak_rscript_executable: Rscript
+
+# ======================== GPS =======================
+lanceotron: False
