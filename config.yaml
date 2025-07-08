@@ -122,3 +122,4 @@ bayespeak_rscript_executable: Rscript
 
 # ======================== GPS =======================
 lanceotron: False
+lanceotron_bw_params: "--extendReads 150 -bs 1 --normalizeUsing RPKM"

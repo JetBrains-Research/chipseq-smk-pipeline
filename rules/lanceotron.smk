@@ -17,11 +17,13 @@ rule bam_to_rpkm_bw:
     log: 'logs/lanceotron/bw/{sample}.log'
     conda: '../envs/deeptools.env.yaml'
     threads: 8
+    params:
+        lanceotron_bw_params=config['lanceotron_bw_params']
     resources:
         threads = 8,
         mem = 16, mem_ram = 12,
         time = 60 * 120
-    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output} --extendReads 150 -bs 1 --normalizeUsing RPKM &> {log}'
+    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output} {params.lanceotron_bw_params} &> {log}'
 
 
 rule call_peaks_lanceotron:
