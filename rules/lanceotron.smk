@@ -4,8 +4,7 @@ from pipeline_util import *
 rule all_lanceotron_results:
     input:
         lanceotron_peaks=expand(f'lanceotron/{{sample}}_L-tron.bed',
-            sample=filter(lambda f: not is_control(f) and f in SAMPLE_2_CONTROL_MAP,
-                aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
+            sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         )
 
 
