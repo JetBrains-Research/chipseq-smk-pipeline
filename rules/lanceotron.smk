@@ -33,4 +33,9 @@ rule call_peaks_lanceotron:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
-        'lanceotron callPeaks {input} -f lanceotron &> {log}'
+        # LanceOtron cuts extension of the bw file before first . to compute resulting name
+        't=$(mktemp -u -p lanceotron -t XXXXX) && nt=$(basename $t) && cp {input} $t && '
+        'lanceotron callPeaks $t -f lanceotron &> {log} && rm $t && '
+        'mv lanceotron/${{nt}}_L-tron.bed lanceotron/{wildcards.sample}_L-tron.tsv && '
+        'cat lanceotron/{wildcards.sample}_L-tron.tsv | '
+        'tail -n +2 | awk -v OFS="\\t" \'{{print($1, $2, $3, ".", $4)}}\' > {output}'
