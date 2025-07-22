@@ -51,7 +51,7 @@ rule call_peaks_omnipeak:
     shell:
          'java --add-modules=jdk.incubator.vector -Xmx{resources.mem_ram}G -jar {input.omnipeak} '
          'analyze -t {input.signal} --chrom.sizes {input.chrom_sizes} {params.control_arg} '
-         '--peaks {output.peaks} --model omnipeak/{wildcards.sample}_{wildcards.bin}.omnipeak '
+         '--peaks {output.peaks} --model omnipeak/{wildcards.sample}_{wildcards.bin}.omni '
          '--workdir omnipeak --iterations {params.omnipeak_iterations} --threshold {params.omnipeak_threshold} '
          '--bin {wildcards.bin} --fragment {params.omnipeak_fragment} --fdr {wildcards.fdr} --threads {threads} '
          '{params.omnipeak_params} {params.additional_arg} &> {log}'
