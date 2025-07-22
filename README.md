@@ -89,7 +89,6 @@ Supported peak caller tools:
 * [MACS3](https://macs3-project.github.io/MACS/)
 * [SICER](https://doi.org/10.1093/bioinformatics/btp340)
 * [SICER2](https://github.com/zanglab/SICER2)
-* [SPAN](https://doi.org/10.1093/bioinformatics/btab376)
 * [HOMER](https://doi.org/10.1016/j.molcel.2010.05.004)
 * [FSeq2](https://doi.org/10.1093/nargab/lqab012)
 * [HotSpot](https://doi.org/10.1038/ng.759)
@@ -97,6 +96,7 @@ Supported peak caller tools:
 * [GPS](https://doi.org/10.1093/bioinformatics/btq590)
 * [BayesPeak](https://doi.org/10.1186/1471-2105-10-299)
 * [LanceOtron](https://doi.org/10.1093/bioinformatics/btac525)
+* Omnipeak
 
 To launch MACS2 in `--broad` mode, use the following config:
 
@@ -177,7 +177,7 @@ $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     --config fastq_dir=<fastq_dir> genome=<genome> \
     bowtie2_params="-X 2000 --dovetail" \
     macs2=True macs2_params="-q 0.05 -f BAMPE --nomodel --nolambda -B --call-summits" \
-    span=True span_fragment=0 --rerun-incomplete
+    omnipeak=True omnipeak_fragment=0 --rerun-incomplete
 ```
 
 P.S: Use `--config` to override default options from `config.yaml` file
@@ -194,7 +194,7 @@ Launch `chipseq-smk-pipeline`:
 ```bash
 $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     all --use-conda --cores all --directory <work_dir> \
-    --config fastq_ext=fastq.gz fastq_dir=<work_dir> bw=True genome=hg19 macs2=True sicer=True span=True \
+    --config fastq_ext=fastq.gz fastq_dir=<work_dir> bw=True genome=hg19 macs2=True sicer=True omnipeak=True \
     --rerun-incomplete
 ```
 

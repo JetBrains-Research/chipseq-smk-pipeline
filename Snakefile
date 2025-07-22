@@ -58,7 +58,7 @@ include: "rules/reads_bw.smk"
 include: "rules/macs2.smk"
 include: "rules/sicer.smk"
 include: "rules/sicer2.smk"
-include: "rules/span.smk"
+include: "rules/omnipeak.smk"
 include: "rules/macs3.smk"
 include: "rules/homer.smk"
 include: "rules/fseq2.smk"
@@ -103,8 +103,8 @@ rule all:
         *([] if not bool(config['sicer']) else rules.all_sicer_results.input),
         # sicer2
         *([] if not bool(config['sicer2']) else rules.all_sicer2_results.input),
-        # span
-        *([] if not bool(config['span']) else rules.all_span_results.input),
+        # omnipeak
+        *([] if not bool(config['omnipeak']) else rules.all_omnipeak_results.input),
         # macs3
         *([] if not bool(config['macs3']) else rules.all_macs3_results.input),
         # homer
