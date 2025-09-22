@@ -97,6 +97,7 @@ Supported peak caller tools:
 * [BayesPeak](https://doi.org/10.1186/1471-2105-10-299)
 * [LanceOtron](https://doi.org/10.1093/bioinformatics/btac525)
 * [Omnipeak](https://github.com/JetBrains-Research/omnipeak)
+* [SPAN](https://github.com/JetBrains-Research/span)
 
 To launch MACS2 in `--broad` mode, use the following config:
 

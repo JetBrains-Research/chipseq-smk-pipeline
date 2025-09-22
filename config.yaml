@@ -79,6 +79,16 @@ omnipeak_threshold: 1e-4
 omnipeak_params: ""
 omnipeak_threads: 8
 
+# ======================== SPAN ========================
+span: False
+span_bin: 100
+span_fragment: "auto"
+span_fdr: 0.05
+span_iterations: 10
+span_threshold: 1e-4
+span_params: ""
+span_threads: 8
+
 # ======================== MACS3 ========================
 macs3: False
 # MACS2 Narrow:
