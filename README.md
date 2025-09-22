@@ -5,8 +5,6 @@
 [Snakemake](https://snakemake.readthedocs.io/en/stable/) based pipeline for ChIP-seq and ATAC-seq datasets processing
 from raw data QC and alignment to visualization and peak calling.
 
-![Scheme](pipeline.png?raw=true "Pipeline")
-
 *During peak calling steps `chipseq-smk-pipeline` automatically matches signal with control file by names proximity.*
 
 
@@ -83,42 +81,68 @@ See `config.yaml` for a complete list of parameters. Use`--config` to override d
 
 Peak callers
 ------------
-Supported peak caller tools:
+Supported peak caller tools and parameters:
 
-* [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137)
-* [MACS3](https://macs3-project.github.io/MACS/)
-* [SICER](https://doi.org/10.1093/bioinformatics/btp340)
-* [SICER2](https://github.com/zanglab/SICER2)
-* [HOMER](https://doi.org/10.1016/j.molcel.2010.05.004)
-* [FSeq2](https://doi.org/10.1093/nargab/lqab012)
-* [HotSpot](https://doi.org/10.1038/ng.759)
-* [PeakSeq](https://doi.org/10.1038/nbt.1518)
-* [GPS](https://doi.org/10.1093/bioinformatics/btq590)
-* [BayesPeak](https://doi.org/10.1186/1471-2105-10-299)
-* [LanceOtron](https://doi.org/10.1093/bioinformatics/btac525)
-* [Omnipeak](https://github.com/JetBrains-Research/omnipeak)
-* [SPAN](https://github.com/JetBrains-Research/span)
+| Peak caller                                                  | Snakemake                              | Command line                                                                                                                                                                                                                                        |
+|--------------------------------------------------------------|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [MACS2](https://doi.org/10.1186/gb-2008-9-9-r137)            | [macs2.smk](rules/macs2.smk)           | `macs2 callpeak -f BAM -t <signal.bam> -c <control.bam> -q 0.05`                                                                                                                                                                                    | 
+| `MACS2 --broad`                                              | [macs2.smk](rules/macs2.smk)           | `macs2 callpeak -f BAM -t <signal.bam> -c <control.bam> --broad --broad-cutoff 0.1`                                                                                                                                                                 | 
+| [MACS3](https://macs3-project.github.io/MACS/)               | [macs3.smk](rules/macs3.smk)           | `macs3 callpeak -f BAM -t <signal.bam> -c <control.bam> -q 0.05`                                                                                                                                                                                    | 
+| `MACS3 --broad`                                              | [macs3.smk](rules/macs3.smk)           | `macs3 callpeak -f BAM -t <signal.bam> -c <control.bam> --broad --broad-cutoff 0.1`                                                                                                                                                                 | 
+| [SICER](https://doi.org/10.1093/bioinformatics/btp340)       | [sicer.smk](rules/sicer.smk)           | `SICER.sh pileups <signal.pileup.bed> <control.pileup.bed> <outputdir> <species> 1 200 150 <effective genome fraction> 600 0.01`                                                                                                                    | 
+| [SICER2](https://github.com/zanglab/SICER2)                  | [sicer2.smk](rules/sicer2.smk)         | `sicer -t <signal.pileup.bed> -c <control.pileup.bed> -s hg38 -w 200 -rt 1 -f 150 -egf 0.74 -fdr 0.01 -g 600 -e 1000`                                                                                                                               | 
+| [HOMER](https://doi.org/10.1016/j.molcel.2010.05.004)        | [homer.smk](rules/homer.smk)           | `findPeaks <signal tags dir> -style histone -o auto -i <control tags dir>` \*                                                                                                                                                                       | 
+| [FSeq2](https://doi.org/10.1093/nargab/lqab012)              | [fseq2.smk](rules/fseq2.smk)           | `fseq2 callpeak -v -q_thr 0.05 -control_file <control.pileup.bed> -chrom_size_file <chrom.sizes> -o fseq2 -name <name> -standard_narrowpeak <signal.pileup.bed>`                                                                                    | 
+| [HotSpot](https://doi.org/10.1038/ng.759)                    | [hotspot.smk](rules/homer.smk)         | `<hotspot_executable> -i <signal.pileup.bed> -o <signal>.hotspot`                                                                                                                                                                                   | 
+| [PeakSeq](https://doi.org/10.1038/nbt.1518)                  | [peakseq.smk](rules/peakseq.smk)       | `<peakseq_executable> -peak_select <config.dat>` **                                                                                                                                                                                                 | 
+| [GPS](https://doi.org/10.1093/bioinformatics/btq590)         | [gps.smk](rules/gps.smk)               | `java -cp <gps.jar> edu.mit.csail.cgs.deepseq.discovery.GPS --d <input.signal_reads_distribution> --g <chrom.sizes>                                               --expt <signal.bam> --ctlr <control.bam> --f SAM --out gps/<signal> --q 0.05` *** | 
+| [BayesPeak](https://doi.org/10.1186/1471-2105-10-299)        | [bayespeak.smk](rules/bayespeak.smk)   | `Rscript <run_bayespeak.R> <signal.pileup.bed> <control.pileup.bed> <signal>.csv ` ****                                                                                                                                                             | 
+| [LanceOtron](https://doi.org/10.1093/bioinformatics/btac525) | [lanceotron.smk](rules/lanceotron.smk) | `lanceotron callPeaksInput <signal.bw> -i <control.bw> -f lanceotron`                                                                                                                                                                               |
+| [Omnipeak](https://github.com/JetBrains-Research/omnipeak)   | [omnipeak.smk](rules/omnipeak.smk)     | `java --add-modules=jdk.incubator.vector -Xmx8G -jar <omnipeak.jar> analyze -t <signal.bam> --chrom.sizes <chrom.sizes> -c <control.bam --peaks <output.peak> --iterations 10 --threshold 1e-4 --bin 100 --fragment auto --fdr 0.05`                |
+| [SPAN](https://github.com/JetBrains-Research/span)           | [span.smk](rules/span.smk)             | `java -Xmx8G -jar <span.jar> analyze -t <signal.bam> --chrom.sizes <chrom.sizes> -c <control.bam --peaks <output.peak> --iterations 10 --threshold 1e-4 --bin 100 --fragment auto --fdr 0.05`                                                       | 
 
-To launch MACS2 in `--broad` mode, use the following config:
+\* HOMER tags preparation
 
-```bash
-$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
-    all [--cores <cores>] --use-conda --directory <work_dir> \
-    --config fastq_dir=<fastq_dir> genome=<genome> \
-    macs2=True macs2_mode=broad macs2_params="--broad --broad-cutoff 0.1" macs2_suffix=broad0.1 \
-    --rerun-incomplete
 ```
+makeTagDirectory <tags dir> <bam>
+```
+
+** PeakSeq `config.dat`
+
+```
+Experiment_id <signal>
+Mappability_map_file <mappability_file>
+ChIP_Seq_reads_data_dirs <signal>
+Input_reads_data_dirs <control>
+chromosome_list_file {chrom.sizes}
+narrowPeak_output_file_path peakseq/<signal>.raw
+Enrichment_mapped_fragment_length 200
+target_FDR 0.05
+N_Simulations 50
+Minimum_interpeak_distance 200
+Background_model Simulated
+max_Qvalue 0.05
+```
+
+*** GPS Read Distribution
+
+```
+java -Xmx1G -cp <gps.jar> edu.mit.csail.cgs.deepseq.analysis.GPS_ReadDistribution --g <chrom.sizes> --coords <input.coords> --chipseq <signal.bam> --f SAM --name gps/<signal> --range 250 --smooth 5 --mrc 4
+```
+
+**** BayesPeak [run_bayespeak.R](scripts/run_bayespeak.R)
+
 
 Peak callers installation
 -------------------------
 This section contains instructions for manual peak callers installation.
 
 * BayesPeak
-  1. Install R
+    1. Install R
   ```
   mamba install  -c conda-forge r-base=3.6.3
   ```
-  2. In R console
+    2. In R console
   ```
   if (!requireNamespace("BiocManager", quietly = TRUE))
       install.packages("BiocManager")
@@ -126,18 +150,18 @@ This section contains instructions for manual peak callers installation.
   BiocManager::install(c("IRanges", "GenomicRanges"))
   ```
 
-  3. Install BayesPeak
+    3. Install BayesPeak
   ```
   wget https://www.bioconductor.org/packages//2.10/bioc/src/contrib/BayesPeak_1.8.0.tar.gz
   R CMD INSTALL BayesPeak_1.8.0.tar.gz 
   ```
 
 * Hotspot
-  1. Install required dependencies
+    1. Install required dependencies
   ```
   sudo apt-get install build-essential libgsl-dev
   ```
-  2. Download and make
+    2. Download and make
   ```
   wget https://github.com/StamLab/hotspot/archive/refs/tags/v4.1.1.zip
   gunzip v4.1.1.zip
@@ -156,7 +180,7 @@ Rules
 -----
 Rules DAG produced with additional command line arguments `--forceall --rulegraph | dot -Tpdf > rules.pdf`
 
-![Rules](rules.png?raw=true "Rules DAG")
+![Rules](pipeline.png?raw=true "Rules DAG")
 
 Computational cluster QSUB/LFS/QSUB
 -----------------------------------
