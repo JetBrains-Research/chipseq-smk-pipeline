@@ -4,7 +4,7 @@ from pipeline_util import *
 ######## Step: Peak Calling: HOMER ##################
 rule all_homer_results:
     input:
-        homer_peaks=expand(f'homer/{{sample}}.peaks',
+        homer_peaks=expand(f'homer/{{sample}}_{config["homer_suffix"]}',
             sample=filter(lambda f: not is_control(f), aligned_names(config, FASTQ_PATHS, BAMS_PATHS))
         )
 
@@ -30,7 +30,7 @@ def homer_input_fun(wildcards):
 rule call_peaks_homer:
     input: unpack(homer_input_fun)
     output:
-        peaks=f'homer/{{sample}}.peaks'
+        peaks=f'homer/{{sample}}_{config["homer_suffix"]}'
     log: f'logs/homer/{{sample}}.log'
     conda: '../envs/homer.env.yaml'
     params:
@@ -40,6 +40,8 @@ rule call_peaks_homer:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
-        'findPeaks {input.signal} -style histone -o auto {params.control_arg} &> {log} && '
-        'cat {input.signal}/regions.txt | grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n >\
-         {params.work_dir}/{output.peaks}'
+        f'findPeaks {{input.signal}} -style {config["homer_style"]} {{params.control_arg}} \
+            -o homer/{{wildcards.sample}}_{config["homer_style"]}.txt &> {{log}} && '
+        f'cat homer/{{wildcards.sample}}_{config["homer_style"]}.txt |\
+            grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n > {{params.work_dir}}/{{output.peaks}} && '
+        f'rm homer/{{wildcards.sample}}_{config["homer_style"]}.txt'

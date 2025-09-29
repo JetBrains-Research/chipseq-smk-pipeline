@@ -107,7 +107,17 @@ macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcar
 #macs3_suffix: q0.05 # do not use underscores here otherwise wrong sample wildcards
 
 # ======================== HOMER =======================
+# Homer possible styles (relevant ones), see findPeaks --help for more info:
+#   factor (transcription factor ChIP-Seq, uses -center, output: peaks.txt,  default)
+#   histone (histone modification ChIP-Seq, region based, uses -region -size 500 -L 0, regions.txt)
+#   dnase (Hypersensitivity [crawford style (nicking)], peaks.txt)
 homer: False
+homer_style: factor
+homer_suffix: peaks.bed
+
+# For histone
+#homer_style: histone
+#homer_suffix: regions.bed
 
 # ======================== FSeq2 =======================
 fseq2: False
