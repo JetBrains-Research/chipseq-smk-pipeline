@@ -42,6 +42,7 @@ rule call_peaks_homer:
     shell:
         f'findPeaks {{input.signal}} -style {config["homer_style"]} {{params.control_arg}} \
             -o homer/{{wildcards.sample}}_{config["homer_style"]}.txt &> {{log}} && '
+        f'touch homer/{{wildcards.sample}}_{config["homer_style"]}.txt && '
         f'cat homer/{{wildcards.sample}}_{config["homer_style"]}.txt |\
             grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n > {{params.work_dir}}/{{output.peaks}} && '
         f'rm homer/{{wildcards.sample}}_{config["homer_style"]}.txt'
