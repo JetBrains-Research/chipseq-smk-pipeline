@@ -63,21 +63,56 @@ On Ubuntu please ensure that `gawk` is installed:
 $ sudo apt-get install gawk
 ```
 
-Launch
-------
+Launch the pipeline 
+-------------------
 
 Run the pipeline to start with fastq reads:
 
 ```bash
 $ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
     all [--cores <cores>] --use-conda --directory <work_dir> \
-    --config fastq_dir=<fastq_dir> genome=<genome> --rerun-incomplete
+    --config genome=<genome> fastq_dir=<fastq_dir>  --rerun-incomplete
 ```
+
+Run the pipeline to start with bams:
+
+```bash
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all [--cores <cores>] --use-conda --directory <work_dir> \
+    --config genome=<genome> start_with_bams=True bams_dir=<bams_dir> --rerun-incomplete
+```
+
+See `config.yaml` for a complete list of parameters. Use`--config` to override default options from `config.yaml` file.
+
+Launch peak calling
+-------------------
 
 The Default pipeline doesn't perform coverage visualization and launch peak callers.<br>
 Please add `bw=True`, `<peak_caller_name>=True` to create coverage bw files and call peaks with `<peak_caller_name>`.
 
-See `config.yaml` for a complete list of parameters. Use`--config` to override default options from `config.yaml` file.
+Run the pipeline with all peak callers in default mode:
+
+```bash
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all [--cores <cores>] --use-conda --directory <work_dir> \
+    --config genome=<genome> \
+    macs2=True sicer=True homer=True hotspot=True peakseq=True lanceotron=True omnipeak=True \
+    --rerun-incomplete --rerun-trigger mtime;
+ ```
+Run the pipeline with peak callers in alternative mode (MACS2 broad, HOMER histone):
+
+```bash
+$ snakemake -p -s <chipseq-smk-pipeline>/Snakefile \
+    all [--cores <cores>] --use-conda --directory <work_dir> \
+    --config genome=<genome> \
+    macs2=True macs2_mode=broad macs2_params="--broad --broad-cutoff 0.1" macs2_suffix=broad0.1 \
+    homer=True homer_style=histone homer_suffix=regions.bed \
+    --rerun-incomplete --rerun-trigger mtime;
+ ```
+
+Please note, that `BayesPeak`, `Hotspot`, and `PeakSeq` cannot be installed automatically, 
+so passing `<peak_caller_name>_executable=<executable>` is required.<br>
+Please see [Peak callers installation](#peak-callers-installation) section for details.
 
 Peak callers
 ------------
