@@ -22,10 +22,10 @@ def homer_input_fun(wildcards):
     control_args = {}
     if sample in SAMPLE_2_CONTROL_MAP:
         control_sample = SAMPLE_2_CONTROL_MAP[sample]
-        control_args['control'] = f"homer/{control_sample}"
+        control_args['control'] = directory(f'homer/{control_sample}')
 
     return dict(
-        signal=f"homer/{sample}",
+        signal=directory(f"homer/{sample}"),
         **control_args,
     )
 
