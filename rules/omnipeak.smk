@@ -12,7 +12,7 @@ rule all_omnipeak_results:
 
 rule download_omnipeak:
     output: 'bin/omnipeak.jar'
-    shell: 'wget -O {output}  https://download.jetbrains.com/biolabs/omnipeak/omnipeak-1.1.6729.jar'
+    shell: 'wget -O {output}  https://download.jetbrains.com/biolabs/omnipeak/omnipeak-1.3.6757.jar'
 
 
 def omnipeak_input_fun(wildcards):
