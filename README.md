@@ -1,5 +1,5 @@
 [![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
-[![DOI](https://zenodo.org/badge/175406207.svg)](https://doi.org/10.5281/zenodo.17800015)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17803444.svg)](https://doi.org/10.5281/zenodo.17803444)
 
 # chipseq-smk-pipeline
 
