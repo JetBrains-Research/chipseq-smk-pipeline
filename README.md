@@ -1,6 +1,6 @@
 [![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17803444.svg)](https://doi.org/10.5281/zenodo.17803444)
-
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 # chipseq-smk-pipeline
 
 [Snakemake](https://snakemake.readthedocs.io/en/stable/) based pipeline for ChIP-seq and ATAC-seq datasets processing
