@@ -64,6 +64,12 @@ On Ubuntu please ensure that `gawk` is installed:
 $ sudo apt-get install gawk
 ```
 
+
+Config
+------
+Please see [config.yaml](config.yaml) for a complete list of parameters.
+
+
 Launch the pipeline 
 -------------------
 

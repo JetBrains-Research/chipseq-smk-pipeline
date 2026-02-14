@@ -40,7 +40,7 @@ def fastq_aligned_names(config, fastq_paths):
 
 
 def _split_to_fname_and_ext(path):
-    # assumes file has valid ext
+    # assumes a file has valid ext
     # understands *.{ext} and *.{ext}.gz
     fname = os.path.basename(path)
 
@@ -48,85 +48,95 @@ def _split_to_fname_and_ext(path):
     if dot_ext == ".gz":
         name2, dot_ext2 = os.path.splitext(name)
 
-        # remove first dot from ext:
+        # remove the first dot from ext:
         return name2, dot_ext2[1:] + dot_ext
     else:
-        # remove first dot from ext:
+        # remove the first dot from ext:
         return name, dot_ext[1:]
+
+
+def _strip_suffixes(name, s1, s2):
+    if name.endswith(s1):
+        return name.replace(s1, '')
+    elif name.endswith(s2):
+        return name.replace(s2, '')
+    else:
+        return name
 
 
 def _sample_by_file(config, fq_path):
     name = _split_to_fname_and_ext(fq_path)[0]
-    if not bool(config['fastq_single_end_only']) and re.match('.*_R?[12]_?$', name):
-        # paired file
-        return re.sub('_R?[12]_?$', '', name)
-    else:
-        # single end file
+    if bool(config['fastq_single_end_only']):
         return name
+    s1, s2 = _get_paired_suffixes(config)
+    return _strip_suffixes(name, s1, s2)
 
 
 def _single_fastq_samples_names(config, fastq_paths):
     if bool(config['fastq_single_end_only']):
         return fastq_names_wo_ext(fastq_paths)
     paired_samples = _paired_fastq_samples_names(config, fastq_paths)
-    return [name for name in fastq_names_wo_ext(fastq_paths)
-            if not re.match('.*_R?[12]_?$', name) or re.sub('_R?[12]_?$', '', name) not in paired_samples]
+    s1, s2 = _get_paired_suffixes(config)
+    result = [name for name in fastq_names_wo_ext(fastq_paths) if _strip_suffixes(name, s1, s2) not in paired_samples]
+    # print('_single_fastq_samples_names: ', result)
+    return result
 
 
 def _paired_fastq_samples_names(config, fastq_paths):
     if bool(config['fastq_single_end_only']):
         return []
     fq_names = set(fastq_names_wo_ext(fastq_paths))
+    s1, s2 = _get_paired_suffixes(config)
     result = []
     for name in fq_names:
-        if re.match('.*_R?[12]_?$', name):
-            sample = re.sub('_R?[12]_?$', '', name)
-            suffix = name.replace(sample, '').replace('1', '2')
-            if f'{sample}{suffix}' in fq_names:
+        if name.endswith(s1):
+            sample = name.replace(s1, '')
+            if f'{sample}{s2}' in fq_names:
                 result.append(sample)
+    # print('_paired_fastq_samples_names: ', result)
     return result
 
 
 def _get_paired_suffixes(config):
     # we assume that all the files share similar naming
-    for f in sorted(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext']))):
+    r1, r2 = config['fastq_pair1'], config['fastq_pair2']
+    fastq_files = list(sorted(glob(os.path.join(config['fastq_dir'], '*.' + config['fastq_ext']))))
+    for f in fastq_files:
         name = _split_to_fname_and_ext(f)[0]
-        if re.match('.*_R?1_?$', name):
-            sample = re.sub('_R?1_?$', '', name)
+        if re.match(f'.*_{r1}_?.*$', name) and not re.match(f'.*_{r2}_?.*$', name):
+            sample = re.sub(f'_{r1}_?.*$', '', name)
             suffix1 = name.replace(sample, '')
-            suffix2 = suffix1.replace('1', '2')
+            suffix2 = suffix1.replace(r1, r2)
             if suffix1 and suffix2 and suffix1 != suffix2 and os.path.exists(f.replace(suffix1, suffix2)):
-                return suffix1, suffix2
-    return '_1', '_2'
+                break
+    else:
+        suffix1, suffix2 = '_1', '_2'
+    # print('_get_paired_suffixes: ', suffix1, suffix2)
+    return suffix1, suffix2
 
 
 def bowtie2_input_paths(config, paired):
-    if bool(config['trim_reads']):
-        if paired:
-            suffix1, suffix2 = _get_paired_suffixes(config)
+    if paired:
+        suffix1, suffix2 = _get_paired_suffixes(config)
+        if bool(config['trim_reads']):
             return [
                 f"trimmed/{{sample}}{suffix1}_trimmed.{config['fastq_ext']}",
                 f"trimmed/{{sample}}{suffix2}_trimmed.{config['fastq_ext']}"
             ]
         else:
             return [
-                f"trimmed/{{sample}}_trimmed.{config['fastq_ext']}",
-            ]
-    else:
-        if paired:
-            suffix1, suffix2 = _get_paired_suffixes(config)
-            return [
                 config['fastq_dir'] + f"/{{sample}}{suffix1}.{config['fastq_ext']}",
                 config['fastq_dir'] + f"/{{sample}}{suffix2}.{config['fastq_ext']}",
             ]
+    else:
+        if bool(config['trim_reads']):
+            return [f"trimmed/{{sample}}_trimmed.{config['fastq_ext']}"]
         else:
-            return [
-                config['fastq_dir'] + f"/{{sample}}.{config['fastq_ext']}"
-            ]
+            return [config['fastq_dir'] + f"/{{sample}}.{config['fastq_ext']}"]
 
 
 def trimmed_fastq_sample_names(fastq_paths):
-    # here `name` could have _1 and _2 suffix in case of paired reads
+    # here `name` could have paired reads suffixes
     return [f"{name}_trimmed" for name in fastq_names_wo_ext(fastq_paths)]
 
 
@@ -149,7 +159,7 @@ def _sample_2_control(config, fastq_paths, bams_paths):
 def find_control_for(file, ext="bam"):
     if is_control(file) or control_not_required(file):
         return None
-    # Find all the files within folder
+    # Find all the files within the folder
     controls = [os.path.basename(n) for n in glob(f'{os.path.dirname(file)}/*.{ext}') if is_control(n)]
     return find_matching_control(os.path.basename(file), controls)
 
@@ -158,8 +168,8 @@ def find_matching_control(bam_name, controls):
     if len(controls) == 0:
         return ''
     # Compute lcs for _ and - separated names, otherwise compute for all symbols
-    parts_bam = re.split('[\\/\-_\s\.]+', str(bam_name.lower()))
-    parts_controls = [re.split('[\\/\-_\s\.]+', c.lower()) for c in controls]
+    parts_bam = re.split(r'[\\/\-_\s\.]+', str(bam_name.lower()))
+    parts_controls = [re.split(r'[\\/\-_\s\.]+', c.lower()) for c in controls]
     match_parts = [_lcs(parts_bam, pc) for pc in parts_controls]
     match_scores = [_score_matching_parts(m) for m in match_parts]
     max_score_items = [i for i in range(len(match_scores)) if match_scores[i] == max(match_scores)]

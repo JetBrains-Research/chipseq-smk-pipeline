@@ -43,7 +43,7 @@ rule bowtie2_index:
 # Align
 rule bowtie2_align_single:
     input:
-        sample=bowtie2_input_paths(config,False),
+        sample=bowtie2_input_paths(config, False),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp(f"{config['bams_dir']}/{{sample}}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"
@@ -60,7 +60,7 @@ rule bowtie2_align_single:
 
 rule bowtie2_align_paired:
     input:
-        sample=bowtie2_input_paths(config,True),
+        sample=bowtie2_input_paths(config, True),
         bowtie2_index_path=rules.bowtie2_index.output
     output: temp(f"{config['bams_dir']}/{{sample}}.bam.raw")
     log: "logs/bam_raw/bowtie2/{sample}.log"

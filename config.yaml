@@ -10,6 +10,10 @@ fastq_ext: "fastq.gz"
 # Force single end processing
 fastq_single_end_only: False
 
+# Configure the pairing of R1 and R2 files
+fastq_pair1: "R1"
+fastq_pair2: "R2"
+
 # ======================== TRIM READS ========================
 trim_reads: False
 
