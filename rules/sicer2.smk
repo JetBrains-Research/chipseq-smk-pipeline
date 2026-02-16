@@ -52,7 +52,7 @@ def sicer2_input_fun(wildcards):
 
 rule call_peaks_sicer2:
     input: unpack(sicer2_input_fun)
-    output: 'sicer2/{sample}-W{width}-G{gap, \d+}{any_suffix}'
+    output: r'sicer2/{sample}-W{width}-G{gap,\d+}{any_suffix}'
     log: 'logs/sicer2/{sample}-W{width}-G{gap}{any_suffix}.log'
     conda: '../envs/sicer2.env.yaml'
     shadow: "shallow"

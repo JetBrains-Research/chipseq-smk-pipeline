@@ -28,7 +28,7 @@ rule call_peaks_macs2:
     input: unpack(macs2_input_fun)
     output: f'macs2/{{sample}}_{config["macs2_suffix"]}_peaks.{config["macs2_mode"]}Peak'
     log: f'logs/macs2_{config["macs2_suffix"]}/{{sample}}_{config["macs2_suffix"]}_{config["macs2_mode"]}.log'
-    conda: '../envs/py27.env.yaml'
+    conda: '../envs/macs2.env.yaml'
     params:
         macs2_params=config['macs2_params'],
         macs2_suffix=config['macs2_suffix'],

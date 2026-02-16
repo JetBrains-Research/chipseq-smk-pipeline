@@ -42,7 +42,4 @@ rule call_peaks_homer:
         mem = 12, mem_ram = 8,
         time = 60 * 120
     shell:
-        f'findPeaks {{input.signal}} -style {config["homer_style"]} {{params.control_arg}} \
-            -o homer/{{wildcards.sample}}_{config["homer_style"]}.txt &> {{log}} || true; '
-        f'cat homer/{{wildcards.sample}}_{config["homer_style"]}.txt |\
-            grep -v "#" | cut -f2- | sort -k1,1 -k2,2n -k3,3n > {{output.peaks}};'
+        'echo'

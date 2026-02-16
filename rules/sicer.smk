@@ -73,9 +73,9 @@ def sicer_input_fun(wildcards):
 
 rule call_peaks_sicer:
     input: unpack(sicer_input_fun)
-    output: 'sicer/{sample}-W{width}-G{gap, \d+}-{any_suffix}'
+    output: r'sicer/{sample}-W{width}-G{gap,\d+}-{any_suffix}'
     log: 'logs/sicer/{sample}-W{width}-G{gap}-{any_suffix}.log'
-    conda: '../envs/py27.env.yaml'
+    conda: '../envs/sicer.env.yaml'
     shadow: "shallow"
     params:
         significance=lambda wildcards, input: config['sicer_fdr'] if input.get('control_pileup',

@@ -11,7 +11,7 @@ rule all_fseq2_results:
 rule filter_pileup_bed:
     input: f"{config['bams_dir']}/pileup/{{sample}}.bed"
     output: temp(f"{config['bams_dir']}/pileup/{{sample}}.filtered.bed")
-    shell: "cat {input} | grep -E 'chr[0-9XYM]+\S' > {output}"
+    shell: "cat {input} | grep -E 'chr[0-9XYM]+\\S' > {output}"
 
 def fseq2_input_fun(wildcards):
     sample = wildcards.sample
