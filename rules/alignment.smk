@@ -107,6 +107,6 @@ rule filter_sort_bam_single:
         mem=16,mem_ram=12,
         time=60 * 120
     shell:
-        'samtools view -bh -q30 {input} > {output}.filtered 2> {log} &&'
-        ' samtools sort {output}.filtered -o {output}  &> {log} &&'
-        ' rm {output}.filtered  &>> {log}'
+        'samtools view -bh -q30 {input} > {output}.filtered 2> {log} && '
+        'samtools sort {output}.filtered -o {output} >> {log} && '
+        'rm {output}.filtered'
