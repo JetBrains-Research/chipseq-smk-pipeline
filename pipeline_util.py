@@ -115,7 +115,7 @@ def _get_paired_suffixes(config):
     return suffix1, suffix2
 
 
-def bowtie2_input_paths(config, paired):
+def paired_reads_paths(config, paired):
     if paired:
         suffix1, suffix2 = _get_paired_suffixes(config)
         if bool(config['trim_reads']):

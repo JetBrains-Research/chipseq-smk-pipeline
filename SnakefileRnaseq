@@ -1,0 +1,82 @@
+from pipeline_util import _fastq_paths, _bams_paths, _paired_fastq_samples_names
+
+
+# use this file as a basic config file in your working directory
+configfile: f"{workflow.basedir}/config.yaml"
+
+
+WORK_DIR = os.getcwd()
+FASTQ_DIR = config['fastq_dir']
+FASTQ_EXT = config['fastq_ext']
+FASTQ_PATHS = _fastq_paths(FASTQ_DIR, FASTQ_EXT)
+GENOME = config['genome']
+BAMS_DIR = config['bams_dir']
+BAMS_PATHS = _bams_paths(BAMS_DIR)
+
+# Get sample names from paired-end fastq files
+def get_rnaseq_samples():
+    """Get sample names for paired-end RNA-seq data"""
+    return _paired_fastq_samples_names(config, FASTQ_PATHS)
+
+
+include: "rules/alignment.smk"
+include: "rules/star.smk"
+include: "rules/rsem.smk"
+
+localrules: allrnaseq
+
+######## Build bigwig coverage tracks ##################
+rule bw_all:
+    input: expand('bw/{sample}.bw', sample=get_rnaseq_samples())
+
+rule index_bams:
+    input: '{anywhere}/{sample}.sortedByCoord.out.bam'
+    output: '{anywhere}/{sample}.sortedByCoord.out.bam.bai'
+    log: 'logs/bams_index/{anywhere}/{sample}.bam.bai.log'
+    conda: '../envs/bio.env.yaml'
+    shell: 'samtools index {input} {output} &> {log}'
+
+rule bam2bw:
+    input:
+         bam="star-align/{sample}.sortedByCoord.out.bam",
+         bai="star-align/{sample}.sortedByCoord.out.bam.bai"
+    output: 'bw/{sample, [^/]*}.bw'
+    log: 'logs/bw/{sample}.log'
+    conda: '../envs/deeptools.env.yaml'
+    threads: 4
+    params:
+        bamCoverage_params=config['bamCoverage_params'],
+    resources:
+        threads = 4,
+        mem = 16, mem_ram = 12,
+        time = 60 * 120
+    shell: 'bamCoverage -b {input.bam} -p {threads} -o {output} {params.bamCoverage_params} &> {log}'
+
+onstart:
+    print(f"Working directory: {WORK_DIR}")
+    print(f"Snakefile directory: {workflow.basedir}")
+    print(f"Fastq directory: {FASTQ_DIR}")
+    print(f"Fastq extension: {FASTQ_EXT}")
+    print(f"Genome: {GENOME}")
+
+    # Create symlinks for pipeline directories
+    for pipeline_dir in ['scripts', 'envs', 'schemas', 'rules']:
+        if not os.path.exists(pipeline_dir):
+            src_dir = os.path.join(workflow.basedir, pipeline_dir)
+            if os.path.exists(src_dir):
+                print(f"Linking '{pipeline_dir}' directory:")
+                shell(f"ln -sf {src_dir} {pipeline_dir}")
+
+
+wildcard_constraints:
+    sample="[^/]+"
+
+######## Main rule ##################
+rule allrnaseq:
+    input:
+        # Aligned BAMs
+        rules.star_all.input,
+        # RSEM quantification
+        rules.rsem_all.input,
+        # BigWig tracks
+        rules.bw_all.input
