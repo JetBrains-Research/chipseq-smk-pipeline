@@ -22,6 +22,7 @@ def get_rnaseq_samples():
 include: "rules/alignment.smk"
 include: "rules/star.smk"
 include: "rules/rsem.smk"
+include: "rules/salmon.smk"
 
 localrules: allrnaseq
 
@@ -74,9 +75,10 @@ wildcard_constraints:
 ######## Main rule ##################
 rule allrnaseq:
     input:
+        rules.salmon_all.input,
         # Aligned BAMs
-        rules.star_all.input,
+        # rules.star_all.input,
         # RSEM quantification
-        rules.rsem_all.input,
+        # rules.rsem_all.input,
         # BigWig tracks
-        rules.bw_all.input
+        # rules.bw_all.input

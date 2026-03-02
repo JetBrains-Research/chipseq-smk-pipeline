@@ -5,12 +5,18 @@ localrules: download_gtf
 rule star_all:
     input: expand('star-aligned/{sample}.toTranscriptome.out.bam', sample=get_rnaseq_samples())
 
+REFERENCE_URLS = {
+    "mm39": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M38/gencode.vM38.primary_assembly.basic.annotation.gtf.gz"
+}
+
 ######## GTF download ##################
 rule download_gtf:
     output: f"{config['genome']}.gtf"
     log: f'logs/{config["genome"]}.gtf.log'
+    params:
+        url = REFERENCE_URLS[config['genome']],
     shell:
-        'wget -O {output}.gz http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/genes/refGene.gtf.gz &> {log} && '
+        'wget -O {output}.gz {params.url} &> {log} && '
         'gunzip {output}.gz'
 
 
