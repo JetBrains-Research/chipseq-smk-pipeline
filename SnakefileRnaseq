@@ -19,7 +19,6 @@ def get_rnaseq_samples():
     return _paired_fastq_samples_names(config, FASTQ_PATHS)
 
 
-include: "rules/alignment.smk"
 include: "rules/star.smk"
 include: "rules/rsem.smk"
 include: "rules/salmon.smk"
@@ -34,16 +33,16 @@ rule index_bams:
     input: '{anywhere}/{sample}.sortedByCoord.out.bam'
     output: '{anywhere}/{sample}.sortedByCoord.out.bam.bai'
     log: 'logs/bams_index/{anywhere}/{sample}.bam.bai.log'
-    conda: '../envs/bio.env.yaml'
+    conda: 'envs/bio.env.yaml'
     shell: 'samtools index {input} {output} &> {log}'
 
 rule bam2bw:
     input:
-         bam="star-align/{sample}.sortedByCoord.out.bam",
-         bai="star-align/{sample}.sortedByCoord.out.bam.bai"
+         bam="star-aligned/{sample}.sortedByCoord.out.bam",
+         bai="star-aligned/{sample}.sortedByCoord.out.bam.bai"
     output: 'bw/{sample, [^/]*}.bw'
     log: 'logs/bw/{sample}.log'
-    conda: '../envs/deeptools.env.yaml'
+    conda: 'envs/deeptools.env.yaml'
     threads: 4
     params:
         bamCoverage_params=config['bamCoverage_params'],
